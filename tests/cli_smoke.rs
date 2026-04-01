@@ -55,6 +55,10 @@ fn help_exits_zero_and_lists_actions() {
         out.contains("spawn-poll-ms") || out.contains("spawn_poll"),
         "help should mention timing flags:\n{out}"
     );
+    assert!(
+        out.contains("--config") || out.contains("config"),
+        "help should mention --config:\n{out}"
+    );
 }
 
 #[test]

@@ -1,0 +1,319 @@
+{
+  "schema": 1,
+  "niri_version": "25.11 (b35bcae)",
+  "outputs": {
+    "DP-1": {
+      "name": "DP-1",
+      "make": "Samsung Electric Company",
+      "model": "Odyssey G93SD",
+      "serial": "HNTY700096",
+      "physical_size": [
+        1190,
+        340
+      ],
+      "modes": [
+        {
+          "width": 3840,
+          "height": 1080,
+          "refresh_rate": 119970,
+          "is_preferred": true
+        },
+        {
+          "width": 3840,
+          "height": 2160,
+          "refresh_rate": 59940,
+          "is_preferred": false
+        },
+        {
+          "width": 3840,
+          "height": 2160,
+          "refresh_rate": 50000,
+          "is_preferred": false
+        },
+        {
+          "width": 5120,
+          "height": 1440,
+          "refresh_rate": 240000,
+          "is_preferred": false
+        },
+        {
+          "width": 5120,
+          "height": 1440,
+          "refresh_rate": 120000,
+          "is_preferred": false
+        },
+        {
+          "width": 5120,
+          "height": 1440,
+          "refresh_rate": 60000,
+          "is_preferred": false
+        },
+        {
+          "width": 3840,
+          "height": 1080,
+          "refresh_rate": 239961,
+          "is_preferred": false
+        },
+        {
+          "width": 3840,
+          "height": 1080,
+          "refresh_rate": 59959,
+          "is_preferred": false
+        },
+        {
+          "width": 2560,
+          "height": 1440,
+          "refresh_rate": 239979,
+          "is_preferred": false
+        },
+        {
+          "width": 2560,
+          "height": 1440,
+          "refresh_rate": 119990,
+          "is_preferred": false
+        },
+        {
+          "width": 2560,
+          "height": 1440,
+          "refresh_rate": 59951,
+          "is_preferred": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "refresh_rate": 239994,
+          "is_preferred": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "refresh_rate": 119879,
+          "is_preferred": false
+        },
+        {
+          "width": 1920,
+          "height": 1080,
+          "refresh_rate": 59939,
+          "is_preferred": false
+        },
+        {
+          "width": 1680,
+          "height": 1050,
+          "refresh_rate": 59954,
+          "is_preferred": false
+        },
+        {
+          "width": 1600,
+          "height": 900,
+          "refresh_rate": 60000,
+          "is_preferred": false
+        },
+        {
+          "width": 1280,
+          "height": 1024,
+          "refresh_rate": 60020,
+          "is_preferred": false
+        },
+        {
+          "width": 1440,
+          "height": 900,
+          "refresh_rate": 59887,
+          "is_preferred": false
+        },
+        {
+          "width": 1280,
+          "height": 800,
+          "refresh_rate": 59810,
+          "is_preferred": false
+        },
+        {
+          "width": 1280,
+          "height": 720,
+          "refresh_rate": 60000,
+          "is_preferred": false
+        },
+        {
+          "width": 1280,
+          "height": 720,
+          "refresh_rate": 59943,
+          "is_preferred": false
+        },
+        {
+          "width": 1024,
+          "height": 768,
+          "refresh_rate": 60004,
+          "is_preferred": false
+        },
+        {
+          "width": 800,
+          "height": 600,
+          "refresh_rate": 60317,
+          "is_preferred": false
+        },
+        {
+          "width": 720,
+          "height": 480,
+          "refresh_rate": 59940,
+          "is_preferred": false
+        },
+        {
+          "width": 640,
+          "height": 480,
+          "refresh_rate": 59940,
+          "is_preferred": false
+        }
+      ],
+      "current_mode": 3,
+      "is_custom_mode": false,
+      "vrr_supported": true,
+      "vrr_enabled": false,
+      "logical": {
+        "x": 0,
+        "y": 0,
+        "width": 5120,
+        "height": 1440,
+        "scale": 1.0,
+        "transform": "Normal"
+      }
+    }
+  },
+  "workspaces": [
+    {
+      "id": 1,
+      "idx": 1,
+      "name": null,
+      "output": "DP-1"
+    },
+    {
+      "id": 5,
+      "idx": 3,
+      "name": null,
+      "output": "DP-1"
+    },
+    {
+      "id": 3,
+      "idx": 2,
+      "name": null,
+      "output": "DP-1"
+    }
+  ],
+  "windows": [
+    {
+      "command": [
+        "xwayland-satellite",
+        ":1",
+        "-listenfd",
+        "145",
+        "-listenfd",
+        "69"
+      ],
+      "app_id": "steam",
+      "title": "Steam",
+      "output": "DP-1",
+      "workspace_idx": 2,
+      "column": 2,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "alacritty"
+      ],
+      "app_id": "Alacritty",
+      "title": "/storage/main/alex/git/niri-session - fish",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 5,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "/usr/bin/Telegram"
+      ],
+      "app_id": "org.telegram.desktop",
+      "title": "‎⁨Роман Нагорный⁩ – (698)",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 3,
+      "tile": 2,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "xwayland-satellite",
+        ":1",
+        "-listenfd",
+        "145",
+        "-listenfd",
+        "69"
+      ],
+      "app_id": "Google-chrome",
+      "title": "VK Messenger - VK Мессенджер",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 3,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "alacritty"
+      ],
+      "app_id": "Alacritty",
+      "title": "~ - fish",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 1,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "xwayland-satellite",
+        ":1",
+        "-listenfd",
+        "145",
+        "-listenfd",
+        "69"
+      ],
+      "app_id": "Google-chrome",
+      "title": "GitHub - niri-wm/niri: A scrollable-tiling Wayland compositor. · GitHub - Google Chrome",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 2,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "/usr/lib/electron39/electron",
+        "--app=/usr/share/cursor/resources/app"
+      ],
+      "app_id": "cursor",
+      "title": "Makefile - niri-session - Cursor",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 4,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "xwayland-satellite",
+        ":1",
+        "-listenfd",
+        "145",
+        "-listenfd",
+        "69"
+      ],
+      "app_id": "Google-chrome",
+      "title": "YouTube Music - 🎵 Chill Cybernetic Terrace: Rain and Ambient Music | Cyberpunk Bedroom over the City | 4K | 10 hours | YouTube Music",
+      "output": "DP-1",
+      "workspace_idx": 2,
+      "column": 1,
+      "tile": 1,
+      "is_floating": false
+    }
+  ]
+}

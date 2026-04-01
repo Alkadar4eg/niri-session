@@ -68,6 +68,8 @@ niri-session --save ~/session.json
 niri-session --load ~/session.json
 ```
 
+Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте соответствие `app_id` / заголовок → команда запуска в `~/.config/niri/niri-session.conf` или в файле, указанном через `--config`. Подробно: [docs/CONFIG.md](docs/CONFIG.md).
+
 Параметры задержек при загрузке (мс) и переменные окружения описаны в [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md).
 
 ## Документация
@@ -78,7 +80,8 @@ niri-session --load ~/session.json
 | [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md) | Поведение `--load`, тайминги, ограничения |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Типичные ошибки |
 | [docs/BUILD.md](docs/BUILD.md) | Сборка, Makefile, версии niri |
+| [docs/CONFIG.md](docs/CONFIG.md) | TOML `[[launch]]`, путь по умолчанию, `--config` |
 
 ## Ограничения (MVP)
 
-Нет фонового авто-сохранения, нет отдельного конфига «мостов» для Flatpak/PWA — при необходимости правьте JSON вручную (см. [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md)). Восстановление раскладки **эвристическое**; тяжёлые случаи (форки процессов вроде Chromium, окна без PID) описаны в [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+Нет фонового авто-сохранения. Для непереносимых команд в JSON используется конфиг [CONFIG.md](docs/CONFIG.md), а не отдельный «bridge» как в hyprsession. Восстановление раскладки **эвристическое**; тяжёлые случаи (форки Chromium, окна без PID) — в [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).

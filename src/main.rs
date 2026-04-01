@@ -1,5 +1,7 @@
+mod cmdline_policy;
 mod error;
 mod ipc;
+mod launch_config;
 mod proc_cmdline;
 mod restore;
 mod session;
@@ -23,6 +25,10 @@ struct Cli {
     /// Restore session from this JSON file
     #[arg(short = 'l', long = "load", conflicts_with = "save_path")]
     load_path: Option<PathBuf>,
+
+    /// TOML with [[launch]] rules (app_id / title_contains → command). Default: ~/.config/niri/niri-session.conf
+    #[arg(long = "config", value_name = "PATH")]
+    config_path: Option<PathBuf>,
 
     /// Poll interval while waiting for a new window after spawn (ms)
     #[arg(
@@ -92,6 +98,7 @@ fn cmd_load(path: &PathBuf, cli: &Cli) -> Result<()> {
         cli.ipc_settle_ms,
         cli.spawn_start_delay_ms,
     );
+    let launch_cfg = launch_config::load(cli.config_path.as_deref())?;
     let mut socket = ipc::connect()?;
-    restore::restore(&mut socket, &session, &timings)
+    restore::restore(&mut socket, &session, &timings, &launch_cfg)
 }

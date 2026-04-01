@@ -1,4 +1,5 @@
 use std::io;
+use std::path::PathBuf;
 
 use thiserror::Error;
 
@@ -45,6 +46,24 @@ pub enum Error {
 
     #[error("empty command")]
     EmptyCommand,
+
+    #[error("config file not found: {}", .0.display())]
+    ConfigNotFound(PathBuf),
+
+    #[error("invalid TOML in {}: {msg}", .path.display())]
+    ConfigToml { path: PathBuf, msg: String },
+
+    #[error("invalid config {}: {msg}", .path.display())]
+    ConfigInvalid { path: PathBuf, msg: String },
+
+    #[error(
+        "no [[launch]] rule matches this window; saved argv is not portable (e.g. xwayland-satellite). Add a rule in niri-session.conf — app_id={app_id:?} title={title:?} cmd={cmd:?}"
+    )]
+    MissingLaunchOverride {
+        cmd: Vec<String>,
+        app_id: Option<String>,
+        title: Option<String>,
+    },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

@@ -8,6 +8,7 @@ use niri_ipc::{Action, WorkspaceReferenceArg};
 
 use crate::error::{Error, Result};
 use crate::ipc;
+use crate::launch_config::{resolve_spawn_command, LaunchConfig};
 use crate::session::{SessionFile, WindowEntry};
 
 /// User-tunable delays to reduce races during `--load`.
@@ -35,9 +36,14 @@ impl Timing {
     }
 }
 
-pub fn restore(socket: &mut Socket, session: &SessionFile, timings: &Timing) -> Result<()> {
+pub fn restore(
+    socket: &mut Socket,
+    session: &SessionFile,
+    timings: &Timing,
+    launch_cfg: &LaunchConfig,
+) -> Result<()> {
     for win in session.sorted_windows() {
-        restore_one(socket, win, timings)?;
+        restore_one(socket, win, timings, launch_cfg)?;
     }
     Ok(())
 }
@@ -48,8 +54,14 @@ fn sleep_ms(ms: u64) {
     }
 }
 
-fn restore_one(socket: &mut Socket, win: &WindowEntry, timings: &Timing) -> Result<()> {
-    if win.command.is_empty() {
+fn restore_one(
+    socket: &mut Socket,
+    win: &WindowEntry,
+    timings: &Timing,
+    launch_cfg: &LaunchConfig,
+) -> Result<()> {
+    let command = resolve_spawn_command(win, launch_cfg)?;
+    if command.is_empty() {
         return Err(Error::EmptyCommand);
     }
 
@@ -69,8 +81,8 @@ fn restore_one(socket: &mut Socket, win: &WindowEntry, timings: &Timing) -> Resu
     )?;
     sleep_ms(timings.ipc_settle_ms);
 
-    let program = &win.command[0];
-    let args: Vec<String> = win.command.iter().skip(1).cloned().collect();
+    let program = &command[0];
+    let args: Vec<String> = command.iter().skip(1).cloned().collect();
     let mut child = std::process::Command::new(program)
         .args(&args)
         .stdin(std::process::Stdio::null())

@@ -1,0 +1,12 @@
+# Copy to ~/.config/niri/niri-session.conf and adjust.
+# Used by: niri-session --load session.json
+# Docs: docs/CONFIG.md
+
+[[launch]]
+app_id = "Google-chrome"
+title_contains = "VK Messenger"
+command = ["google-chrome-stable"]
+
+[[launch]]
+app_id = "Google-chrome"
+command = ["google-chrome-stable"]
