@@ -9,6 +9,7 @@ use niri_ipc::{Action, WorkspaceReferenceArg};
 use crate::error::{Error, Result};
 use crate::ipc;
 use crate::launch_config::{resolve_spawn_command, LaunchConfig};
+use crate::notify_user;
 use crate::session::{SessionFile, WindowEntry};
 
 /// User-tunable delays to reduce races during `--load`.
@@ -41,9 +42,16 @@ pub fn restore(
     session: &SessionFile,
     timings: &Timing,
     launch_cfg: &LaunchConfig,
+    notify_on_spawn_failure: bool,
 ) -> Result<()> {
     for win in session.sorted_windows() {
-        restore_one(socket, win, timings, launch_cfg)?;
+        restore_one(
+            socket,
+            win,
+            timings,
+            launch_cfg,
+            notify_on_spawn_failure,
+        )?;
     }
     Ok(())
 }
@@ -59,11 +67,14 @@ fn restore_one(
     win: &WindowEntry,
     timings: &Timing,
     launch_cfg: &LaunchConfig,
+    notify_on_spawn_failure: bool,
 ) -> Result<()> {
     let command = resolve_spawn_command(win, launch_cfg)?;
     if command.is_empty() {
         return Err(Error::EmptyCommand);
     }
+
+    let cmd_display = command.join(" ");
 
     ipc::action(
         socket,
@@ -83,20 +94,48 @@ fn restore_one(
 
     let program = &command[0];
     let args: Vec<String> = command.iter().skip(1).cloned().collect();
-    let mut child = std::process::Command::new(program)
+    let mut child = match std::process::Command::new(program)
         .args(&args)
         .stdin(std::process::Stdio::null())
         .stdout(std::process::Stdio::null())
         .stderr(std::process::Stdio::null())
         .spawn()
-        .map_err(|e| Error::Spawn(e.to_string()))?;
+    {
+        Ok(c) => c,
+        Err(e) => {
+            if notify_on_spawn_failure {
+                notify_user::spawn_or_window_failure(
+                    "niri-session: не удалось запустить процесс",
+                    &format!("{cmd_display}\n{}", e),
+                );
+            }
+            return Err(Error::Spawn(e.to_string()));
+        }
+    };
 
     let pid = child.id();
     thread::spawn(move || {
         let _ = child.wait();
     });
 
-    let window_id = wait_for_pid(socket, pid, timings)?;
+    let window_id = match wait_for_pid(socket, pid, timings) {
+        Ok(id) => id,
+        Err(e) => {
+            if notify_on_spawn_failure {
+                let reason = match &e {
+                    Error::WindowTimeout { pid } => {
+                        format!("окно не появилось за {} ms (pid {pid})", timings.spawn_timeout_ms)
+                    }
+                    _ => e.to_string(),
+                };
+                notify_user::spawn_or_window_failure(
+                    "niri-session: таймаут ожидания окна",
+                    &format!("{cmd_display}\n{reason}"),
+                );
+            }
+            return Err(e);
+        }
+    };
     sleep_ms(timings.ipc_settle_ms);
 
     ipc::action(socket, Action::FocusWindow { id: window_id })?;

@@ -59,6 +59,10 @@ fn help_exits_zero_and_lists_actions() {
         out.contains("--config") || out.contains("config"),
         "help should mention --config:\n{out}"
     );
+    assert!(
+        out.contains("spawn-timeout") && out.contains("no-notify"),
+        "help should mention load timing and notify flags:\n{out}"
+    );
 }
 
 #[test]

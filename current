@@ -179,20 +179,26 @@
   },
   "workspaces": [
     {
+      "id": 10,
+      "idx": 3,
+      "name": null,
+      "output": "DP-1"
+    },
+    {
       "id": 1,
       "idx": 1,
       "name": null,
       "output": "DP-1"
     },
     {
-      "id": 5,
-      "idx": 3,
+      "id": 9,
+      "idx": 2,
       "name": null,
       "output": "DP-1"
     },
     {
-      "id": 3,
-      "idx": 2,
+      "id": 11,
+      "idx": 4,
       "name": null,
       "output": "DP-1"
     }
@@ -200,18 +206,51 @@
   "windows": [
     {
       "command": [
-        "xwayland-satellite",
-        ":1",
-        "-listenfd",
-        "145",
-        "-listenfd",
-        "69"
+        "/usr/lib/electron39/electron",
+        "--app=/usr/share/cursor/resources/app"
       ],
-      "app_id": "steam",
-      "title": "Steam",
+      "app_id": "cursor",
+      "title": "niri-session.conf.example - niri-session - Cursor",
       "output": "DP-1",
       "workspace_idx": 2,
       "column": 2,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "/opt/google/chrome/chrome"
+      ],
+      "app_id": "google-chrome",
+      "title": "GitHub - niri-wm/niri: A scrollable-tiling Wayland compositor. · GitHub - Google Chrome",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 2,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "alacritty"
+      ],
+      "app_id": "Alacritty",
+      "title": "/storage/main/alex/git/niri-session: ./target/release/niri-session --save current - ./target/release/niri-session",
+      "output": "DP-1",
+      "workspace_idx": 1,
+      "column": 3,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "python3",
+        "/usr/bin/lutris"
+      ],
+      "app_id": "net.lutris.Lutris",
+      "title": "Lutris",
+      "output": "DP-1",
+      "workspace_idx": 3,
+      "column": 1,
       "tile": 1,
       "is_floating": false
     },
@@ -223,36 +262,7 @@
       "title": "/storage/main/alex/git/niri-session - fish",
       "output": "DP-1",
       "workspace_idx": 1,
-      "column": 5,
-      "tile": 1,
-      "is_floating": false
-    },
-    {
-      "command": [
-        "/usr/bin/Telegram"
-      ],
-      "app_id": "org.telegram.desktop",
-      "title": "‎⁨Роман Нагорный⁩ – (698)",
-      "output": "DP-1",
-      "workspace_idx": 1,
-      "column": 3,
-      "tile": 2,
-      "is_floating": false
-    },
-    {
-      "command": [
-        "xwayland-satellite",
-        ":1",
-        "-listenfd",
-        "145",
-        "-listenfd",
-        "69"
-      ],
-      "app_id": "Google-chrome",
-      "title": "VK Messenger - VK Мессенджер",
-      "output": "DP-1",
-      "workspace_idx": 1,
-      "column": 3,
+      "column": 1,
       "tile": 1,
       "is_floating": false
     },
@@ -261,57 +271,34 @@
         "alacritty"
       ],
       "app_id": "Alacritty",
-      "title": "~ - fish",
-      "output": "DP-1",
-      "workspace_idx": 1,
-      "column": 1,
-      "tile": 1,
-      "is_floating": false
-    },
-    {
-      "command": [
-        "xwayland-satellite",
-        ":1",
-        "-listenfd",
-        "145",
-        "-listenfd",
-        "69"
-      ],
-      "app_id": "Google-chrome",
-      "title": "GitHub - niri-wm/niri: A scrollable-tiling Wayland compositor. · GitHub - Google Chrome",
-      "output": "DP-1",
-      "workspace_idx": 1,
-      "column": 2,
-      "tile": 1,
-      "is_floating": false
-    },
-    {
-      "command": [
-        "/usr/lib/electron39/electron",
-        "--app=/usr/share/cursor/resources/app"
-      ],
-      "app_id": "cursor",
-      "title": "Makefile - niri-session - Cursor",
-      "output": "DP-1",
-      "workspace_idx": 1,
-      "column": 4,
-      "tile": 1,
-      "is_floating": false
-    },
-    {
-      "command": [
-        "xwayland-satellite",
-        ":1",
-        "-listenfd",
-        "145",
-        "-listenfd",
-        "69"
-      ],
-      "app_id": "Google-chrome",
-      "title": "YouTube Music - 🎵 Chill Cybernetic Terrace: Rain and Ambient Music | Cyberpunk Bedroom over the City | 4K | 10 hours | YouTube Music",
+      "title": "/storage/main/alex/git/niri-session - fish",
       "output": "DP-1",
       "workspace_idx": 2,
       "column": 1,
+      "tile": 1,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "alacritty"
+      ],
+      "app_id": "Alacritty",
+      "title": "/storage/main/alex/git/niri-session - fish",
+      "output": "DP-1",
+      "workspace_idx": 2,
+      "column": 1,
+      "tile": 2,
+      "is_floating": false
+    },
+    {
+      "command": [
+        "keepassxc"
+      ],
+      "app_id": "org.keepassxc.KeePassXC",
+      "title": "database.kdbx [Заблокировано] - KeePassXC",
+      "output": "DP-1",
+      "workspace_idx": 3,
+      "column": 2,
       "tile": 1,
       "is_floating": false
     }

@@ -16,25 +16,30 @@
 
 Раскладка **не гарантируется** на 100% для сложных сценариев (см. ниже).
 
-## Параметры таймингов (CLI)
+## Параметры `--load` (CLI, env, конфиг)
 
-Все значения в **миллисекундах**. Есть соответствующие переменные окружения (удобно для постоянных настроек).
+Все значения таймингов — в **миллисекундах**.
 
-| Флаг | Env | По умолчанию | Назначение |
-|------|-----|----------------|------------|
-| `--spawn-poll-ms` | `NIRI_SESSION_SPAWN_POLL_MS` | `50` | Интервал опроса `Request::Windows` при ожидании нового окна после запуска. |
-| `--spawn-timeout-ms` | `NIRI_SESSION_SPAWN_TIMEOUT_MS` | `120000` | Максимальное время ожидания появления окна с нужным PID. |
-| `--ipc-settle-ms` | `NIRI_SESSION_IPC_SETTLE_MS` | `80` | Пауза после действий IPC, меняющих фокус/раскладку, и между шагами выравнивания. |
-| `--spawn-start-delay-ms` | `NIRI_SESSION_SPAWN_START_DELAY_MS` | `0` | Задержка перед **первым** опросом после `spawn` (для медленных клиентов). |
-| `--config` | — | — | Путь к TOML с `[[launch]]` (переопределение `command` по `app_id` / `title_contains`). Без флага читается `~/.config/niri/niri-session.conf`, если файл есть. |
+**Приоритет:** аргумент CLI → переменная окружения → секция **`[load]`** в `niri-session.conf` → встроенное значение по умолчанию.
 
-Приоритет: **аргументы командной строки** переопределяют переменные окружения, те переопределяют значения по умолчанию.
+| Флаг | Env | Дефолт (без конфига) | Назначение |
+|------|-----|----------------------|------------|
+| `--spawn-poll-ms` | `NIRI_SESSION_SPAWN_POLL_MS` | `50` | Интервал опроса `Request::Windows` при ожидании нового окна после spawn. |
+| `--spawn-timeout-ms` | `NIRI_SESSION_SPAWN_TIMEOUT_MS` | **`2000`** (2 с) | Ожидание появления окна с PID запущенного процесса. Для тяжёлых приложений увеличьте здесь, в `[load]` или в env. |
+| `--ipc-settle-ms` | `NIRI_SESSION_IPC_SETTLE_MS` | `80` | Пауза после IPC, меняющих фокус/раскладку, и между шагами выравнивания. |
+| `--spawn-start-delay-ms` | `NIRI_SESSION_SPAWN_START_DELAY_MS` | `0` | Задержка перед первым опросом после spawn. |
+| `--no-notify-on-spawn-failure` | `NIRI_SESSION_NOTIFY_ON_SPAWN_FAILURE` (`true`/`false`/`0`/`1`) | уведомления **вкл.** | Не вызывать `notify-send`, если не удалось выполнить `spawn` или окно не появилось за `spawn_timeout_ms`. |
+| `--config` | — | — | Путь к TOML (`[load]` + `[[launch]]`). Без флага: `~/.config/niri/niri-session.conf`, если есть. |
+
+Уведомления: при ошибке запуска или таймауте окна вызывается **`notify-send`** (пакет `libnotify`), если не отключено. Текст на русском в теле уведомления.
 
 Пример:
 
 ```sh
-niri-session --load ~/session.json --spawn-poll-ms 100 --ipc-settle-ms 150
+niri-session --load ~/session.json --spawn-poll-ms 100 --spawn-timeout-ms 8000
 ```
+
+Постоянные настройки удобно держать в `[load]` в `niri-session.conf` (см. [CONFIG.md](CONFIG.md)).
 
 ## Конфиг `[[launch]]` (обязателен для xwayland-satellite и т.п.)
 

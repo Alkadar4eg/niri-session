@@ -68,7 +68,7 @@ niri-session --save ~/session.json
 niri-session --load ~/session.json
 ```
 
-Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте соответствие `app_id` / заголовок → команда запуска в `~/.config/niri/niri-session.conf` или в файле, указанном через `--config`. Подробно: [docs/CONFIG.md](docs/CONFIG.md).
+Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте соответствие `app_id` / заголовок → команда запуска в `~/.config/niri/niri-session.conf` или в файле, указанном через `--config`. В том же файле секция **`[load]`** задаёт тайминги восстановления и опцию уведомлений (`notify-send` при сбое spawn или таймауте окна; по умолчанию включено). Подробно: [docs/CONFIG.md](docs/CONFIG.md).
 
 Параметры задержек при загрузке (мс) и переменные окружения описаны в [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md).
 

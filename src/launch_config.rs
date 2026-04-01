@@ -9,12 +9,33 @@ use crate::cmdline_policy;
 use crate::error::{Error, Result};
 use crate::session::WindowEntry;
 
+/// Default timing values when neither CLI nor `[load]` sets them.
+pub const DEFAULT_SPAWN_POLL_MS: u64 = 50;
+/// How long to wait for a new window to appear after `spawn` (same PID in IPC).
+pub const DEFAULT_SPAWN_TIMEOUT_MS: u64 = 2000;
+pub const DEFAULT_IPC_SETTLE_MS: u64 = 80;
+pub const DEFAULT_SPAWN_START_DELAY_MS: u64 = 0;
+
 /// Parsed `niri-session.conf`.
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct LaunchConfig {
+    /// Defaults for `--load` (timings, notifications). Optional; see [LoadSettings].
+    #[serde(default)]
+    pub load: LoadSettings,
     /// First matching rule wins. Put more specific rules (`app_id` + `title_contains`) first.
     #[serde(default)]
     pub launch: Vec<LaunchRule>,
+}
+
+/// Optional defaults for session restore, TOML table `[load]`.
+#[derive(Debug, Clone, Default, Deserialize)]
+pub struct LoadSettings {
+    pub spawn_poll_ms: Option<u64>,
+    pub spawn_timeout_ms: Option<u64>,
+    pub ipc_settle_ms: Option<u64>,
+    pub spawn_start_delay_ms: Option<u64>,
+    /// If `false`, do not call `notify-send` on spawn/window timeout failures.
+    pub notify_on_spawn_failure: Option<bool>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -119,6 +140,59 @@ pub fn resolve_spawn_command(win: &WindowEntry, cfg: &LaunchConfig) -> Result<Ve
     })
 }
 
+/// Notify user on spawn failures: CLI `--no-notify-on-spawn-failure` wins, then env
+/// `NIRI_SESSION_NOTIFY_ON_SPAWN_FAILURE`, then `[load].notify_on_spawn_failure`, then `true`.
+pub fn merged_notify_on_failure(no_notify_cli: bool, cfg: &LaunchConfig) -> bool {
+    if no_notify_cli {
+        return false;
+    }
+    if let Ok(v) = std::env::var("NIRI_SESSION_NOTIFY_ON_SPAWN_FAILURE") {
+        let lower = v.to_ascii_lowercase();
+        if matches!(lower.as_str(), "0" | "false" | "no" | "off") {
+            return false;
+        }
+        if matches!(lower.as_str(), "1" | "true" | "yes" | "on") {
+            return true;
+        }
+    }
+    cfg.load.notify_on_spawn_failure.unwrap_or(true)
+}
+
+#[cfg(test)]
+mod notify_merge_tests {
+    use super::*;
+
+    #[test]
+    fn cli_no_notify_wins() {
+        let cfg = LaunchConfig {
+            load: LoadSettings {
+                notify_on_spawn_failure: Some(true),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(!merged_notify_on_failure(true, &cfg));
+    }
+
+    #[test]
+    fn config_can_disable() {
+        let cfg = LaunchConfig {
+            load: LoadSettings {
+                notify_on_spawn_failure: Some(false),
+                ..Default::default()
+            },
+            ..Default::default()
+        };
+        assert!(!merged_notify_on_failure(false, &cfg));
+    }
+
+    #[test]
+    fn default_notify_true() {
+        let cfg = LaunchConfig::default();
+        assert!(merged_notify_on_failure(false, &cfg));
+    }
+}
+
 #[cfg(test)]
 mod tests {
     use super::*;
@@ -139,6 +213,7 @@ mod tests {
     #[test]
     fn override_by_app_id_only() {
         let cfg = LaunchConfig {
+            load: LoadSettings::default(),
             launch: vec![LaunchRule {
                 app_id: Some("Google-chrome".into()),
                 title_contains: None,
@@ -157,6 +232,7 @@ mod tests {
     #[test]
     fn more_specific_rule_first() {
         let cfg = LaunchConfig {
+            load: LoadSettings::default(),
             launch: vec![
                 LaunchRule {
                     app_id: Some("Google-chrome".into()),
@@ -182,6 +258,7 @@ mod tests {
     #[test]
     fn portable_cmd_ignores_config() {
         let cfg = LaunchConfig {
+            load: LoadSettings::default(),
             launch: vec![LaunchRule {
                 app_id: Some("foot".into()),
                 title_contains: None,

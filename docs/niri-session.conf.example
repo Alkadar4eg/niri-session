@@ -2,6 +2,10 @@
 # Used by: niri-session --load session.json
 # Docs: docs/CONFIG.md
 
+[load]
+# spawn_timeout_ms = 5000
+# notify_on_spawn_failure = true
+
 [[launch]]
 app_id = "Google-chrome"
 title_contains = "VK Messenger"

@@ -16,11 +16,14 @@ echo "$NIRI_SOCKET"
 
 ## Таймаут при `--load`
 
-Сообщение о таймауте ожидания окна по PID:
+По умолчанию окно ждётся **2 секунды** (`spawn_timeout_ms`). Сообщение о таймауте ожидания окна по PID:
 
-- Увеличьте `--spawn-timeout-ms` и при необходимости `--spawn-start-delay-ms`.
-- Увеличьте `--spawn-poll-ms` только если нагрузка на CPU не критична (реже опрос).
-- Для браузеров и Electron-приложений PID дочернего процесса может **не совпадать** с PID в `Request::Windows` — это известное ограничение MVP; попробуйте другой способ запуска или правку JSON.
+- Увеличьте `spawn_timeout_ms` в **`[load]`** в `~/.config/niri/niri-session.conf`, или `--spawn-timeout-ms`, или `NIRI_SESSION_SPAWN_TIMEOUT_MS`.
+- При необходимости увеличьте `--spawn-start-delay-ms` / `spawn_start_delay_ms` в конфиге.
+- Увеличивайте `--spawn-poll-ms` только если нагрузка на CPU не критична.
+- Для браузеров и Electron PID в IPC может **не совпасть** с PID `spawn` — известное ограничение MVP; попробуйте другой способ запуска или правку JSON/конфига.
+
+Если включены уведомления (по умолчанию да), при таймауте также придёт **desktop notification** через `notify-send` (нужен `libnotify`).
 
 ## Пустой или битый JSON
 
