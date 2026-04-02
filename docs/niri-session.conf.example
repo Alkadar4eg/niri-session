@@ -12,6 +12,7 @@
 # no_await = false
 # spawn_deadline = 10000
 # notify_on_spawn_failure = true
+# resume_focused = true   # false — не вызывать FocusWindow в конце --load
 
 # command — массив или одна строка с аргументами:
 # command = "google-chrome-stable --profile-directory=Default"
