@@ -37,12 +37,15 @@ The **`schema`** field (integer): current format version is **`1`**. Breaking st
 | `column` | `number` | Column index in the scrolling layout, **1-based** (like `pos_in_scrolling_layout.0`). |
 | `tile` | `number` | Position in the column stack, **1-based** (top tile is 1). |
 | `is_floating` | `boolean` | Floating vs tiled. |
+| `was_focused` | `boolean` | Present when the window had focus at save time; used to refocus on `--load` (default `false` if omitted). |
+| `column_width` | `number` \| omitted | Tiled windows only: column width in **logical pixels** (from IPC `WindowLayout.tile_size` width at save). On `--load`, applied with `SetColumnWidth` after the column is formed. |
+| `window_height` | `number` \| omitted | Tiled windows only: tile height in **logical pixels** (from `tile_size` height). On `--load`, applied with `SetWindowHeight` per matched window. |
 
 Windows with unknown PID or no command line in `/proc` at save time are **skipped** (cannot be restored with this model).
 
 **Chrome/Chromium installed PWA** windows may share one browser PID: `/proc` may then have the wrong `--app-id=` for a given window. On **`--save`** and **`--load`**, `niri-session-manage` aligns **`--app-id=`** with **`app_id`** when it looks like `chrome-<id>-…` / `chromium-<id>-…` (opaque id up to the first `-` after the prefix).
 
-For windows like **xwayland-satellite** with **`-listenfd`**, JSON keeps the real `command` from `/proc` (not suitable to relaunch). On **`--load`**, the real `argv` comes from TOML [`[[launch]]`](CONFIG.md) matching `app_id` / `title_contains` and **`resolve`**. Fields `output`, `workspace_idx`, `column`, `tile`, `is_floating` drive **focus order** before each launch; exact column/tile layout from JSON is **not** restored (see [LOAD_RESTORE.md](LOAD_RESTORE.md)).
+For windows like **xwayland-satellite** with **`-listenfd`**, JSON keeps the real `command` from `/proc` (not suitable to relaunch). On **`--load`**, the real `argv` comes from TOML [`[[launch]]`](CONFIG.md) matching `app_id` / `title_contains` and **`resolve`**. Fields `output`, `workspace_idx`, `column`, `tile`, `is_floating` drive **focus order** before each launch. For **tiled** windows, optional **`column_width`** / **`window_height`** restore sizes via IPC after placement (see [LOAD_RESTORE.md](LOAD_RESTORE.md)).
 
 ## Minimal example (fragment)
 

@@ -11,7 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use niri_ipc::socket::Socket;
-use niri_ipc::{Action, Window, Workspace, WorkspaceReferenceArg};
+use niri_ipc::{Action, SizeChange, Window, Workspace, WorkspaceReferenceArg};
 
 use crate::debug_log::DebugLog;
 use crate::error::{Error, Result};
@@ -260,6 +260,97 @@ fn wait_for_new_window(
     }
 }
 
+/// После сборки колонки (или одного тайла): ширина колонки и высоты окон из сессии.
+fn apply_saved_tiled_geometry(
+    socket: &mut Socket,
+    wins: &[&WindowEntry],
+    timings: &Timing,
+    debug: DebugLog,
+) -> Result<()> {
+    let Some(first) = wins.first().copied() else {
+        return Ok(());
+    };
+    if first.is_floating {
+        return Ok(());
+    }
+    let need_column = first.column_width.is_some();
+    let need_any_height = wins.iter().any(|w| w.window_height.is_some());
+    if !need_column && !need_any_height {
+        return Ok(());
+    }
+
+    focus_monitor_workspace(socket, first, timings, debug)?;
+
+    let col = first.column;
+    if need_column {
+        if let Some(w) = first.column_width {
+            ipc::action(
+                socket,
+                Action::FocusColumn { index: col },
+                debug,
+            )?;
+            sleep_ms(
+                timings.ipc_settle_ms,
+                debug,
+                "before SetColumnWidth (FocusColumn)",
+            );
+            ipc::action(
+                socket,
+                Action::SetColumnWidth {
+                    change: SizeChange::SetFixed(w),
+                },
+                debug,
+            )?;
+            sleep_ms(timings.ipc_settle_ms, debug, "after SetColumnWidth");
+        }
+    }
+
+    let workspaces = ipc::workspaces(socket, debug)?;
+    let windows = ipc::windows(socket, debug)?;
+
+    for win in wins {
+        let Some(h) = win.window_height else {
+            continue;
+        };
+        let Some(ws_id) = resolve_workspace_id(&workspaces, &win.output, win.workspace_idx) else {
+            debug.log(format!(
+                "apply_saved_tiled_geometry: no workspace for output={} idx={}",
+                win.output, win.workspace_idx
+            ));
+            continue;
+        };
+        let Some(live) = windows
+            .iter()
+            .find(|live| live_window_matches_saved_slot(win, live, ws_id))
+        else {
+            debug.log(format!(
+                "apply_saved_tiled_geometry: no live window for col={} tile={}",
+                win.column, win.tile
+            ));
+            continue;
+        };
+        debug.log(format!(
+            "apply_saved_tiled_geometry: SetWindowHeight id={} h={h}",
+            live.id
+        ));
+        ipc::action(
+            socket,
+            Action::SetWindowHeight {
+                id: Some(live.id),
+                change: SizeChange::SetFixed(h),
+            },
+            debug,
+        )?;
+        sleep_ms(
+            timings.ipc_settle_ms,
+            debug,
+            "after SetWindowHeight",
+        );
+    }
+
+    Ok(())
+}
+
 fn focus_monitor_workspace(socket: &mut Socket, win: &WindowEntry, timings: &Timing, debug: DebugLog) -> Result<()> {
     ipc::action(
         socket,
@@ -452,6 +543,7 @@ fn restore_column_stack(
         debug.log("restore_column_stack: tile step done");
     }
 
+    apply_saved_tiled_geometry(socket, wins, timings, debug)?;
     Ok(())
 }
 
@@ -542,6 +634,10 @@ fn restore_one(
         let _ = wait_for_new_window(socket, &before_ids, timings, debug)?;
     }
 
+    if !win.is_floating {
+        apply_saved_tiled_geometry(socket, &[win], timings, debug)?;
+    }
+
     debug.log("window restore step done");
     Ok(())
 }
@@ -615,6 +711,8 @@ mod matching_tests {
             tile,
             is_floating: floating,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         }
     }
 

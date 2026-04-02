@@ -40,6 +40,12 @@ pub struct WindowEntry {
     /// Окно было в фокусе при сохранении сессии (для `--load`).
     #[serde(default)]
     pub was_focused: bool,
+    /// Ширина колонки в логических пикселях (из `tile_size` при сохранении); для `--load` → `SetColumnWidth`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub column_width: Option<i32>,
+    /// Высота тайла в логических пикселях (из `tile_size` при сохранении); для `--load` → `SetWindowHeight`.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub window_height: Option<i32>,
 }
 
 impl WindowEntry {
@@ -107,6 +113,8 @@ mod tests {
                     tile: 1,
                     is_floating: false,
                     was_focused: false,
+                    column_width: None,
+                    window_height: None,
                 },
                 WindowEntry {
                     command: vec!["a".into()],
@@ -118,6 +126,8 @@ mod tests {
                     tile: 1,
                     is_floating: false,
                     was_focused: false,
+                    column_width: None,
+                    window_height: None,
                 },
             ],
         }
@@ -144,6 +154,8 @@ mod tests {
             tile: 1,
             is_floating: false,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         };
         let w2 = WindowEntry {
             command: vec!["b".into()],
@@ -155,6 +167,8 @@ mod tests {
             tile: 2,
             is_floating: false,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         };
         let w3 = WindowEntry {
             command: vec!["c".into()],
@@ -166,6 +180,8 @@ mod tests {
             tile: 1,
             is_floating: false,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         };
         let s = SessionFile {
             windows: vec![w1, w2, w3],

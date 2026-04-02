@@ -15,6 +15,7 @@
    - picks **argv for launch** (`[[launch]]` when needed — see [CONFIG.md](CONFIG.md));
    - runs the process with `std::process::Command` (not IPC `Spawn`);
    - pauses from `[load]` / CLI (`ipc_settle_ms`, `spawn_start_delay_ms`).
+   - after a **tiled** group is placed: if JSON has **`column_width`** / **`window_height`**, applies **`SetColumnWidth`** (focused column) and **`SetWindowHeight`** per window (matched by workspace slot and `app_id` / `title`), same semantics as `niri msg action set-column-width` / `set-window-height` with a fixed logical size.
 
 **By default**, after each successful spawn load **waits** for a new window in niri’s list (up to **`spawn_deadline`** ms), then continues — startup order stays consistent. **`--no-await`** or **`[load].no_await = true`** disable waiting (“fire and forget”; for columns with several tiles **`ConsumeWindowIntoColumn`** may run too early).
 
@@ -68,6 +69,6 @@ X11 windows on niri go through **xwayland-satellite**; JSON often has `argv` lik
 
 ## Limitations
 
-- **Multiple windows in one column** (`column` + different `tile` in JSON): on `--load` windows start in ascending `tile` order; after each subsequent launch IPC **`ConsumeWindowIntoColumn`** is called (the new window on the right is pulled into the column with index **`column`**). Before each spawn **`FocusColumn`** runs with that index. Stack order inside the column and column mode (tabs, etc.) may **not** match the snapshot; slow windows can hit the poll deadline — increase **`spawn_deadline`** (or **`ipc_settle_ms`** as poll interval).
-- **Floating windows** and **exact tile geometry**: as before, positions are not carried over after launch.
+- **Multiple windows in one column** (`column` + different `tile` in JSON): on `--load` windows start in ascending `tile` order; after each subsequent launch IPC **`ConsumeWindowIntoColumn`** is called (the new window on the right is pulled into the column with index **`column`**). Before each spawn **`FocusColumn`** runs with that index. Stack order inside the column and column mode (tabs, etc.) may **not** match the snapshot; slow windows can hit the poll deadline — increase **`spawn_deadline`** (or **`ipc_settle_ms`** as poll interval). Column width and per-tile heights from JSON (**`column_width`**, **`window_height`**) are applied **after** the group is built; old session files without those fields skip this step.
+- **Floating windows**: positions and sizes are not carried over after launch.
 - **PID / fork:** windows are not matched to the process after spawn; the new window is found by **set difference** of ids from `Request::Windows`.

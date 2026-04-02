@@ -71,8 +71,22 @@ pub fn capture(socket: &mut Socket, debug: DebugLog) -> Result<SessionFile> {
             continue;
         }
 
+        let (column_width, window_height) =
+            if !w.is_floating && w.layout.pos_in_scrolling_layout.is_some() {
+                let (tw, th) = w.layout.tile_size;
+                let cw = tw.round() as i32;
+                let wh = th.round() as i32;
+                if cw > 0 && wh > 0 {
+                    (Some(cw), Some(wh))
+                } else {
+                    (None, None)
+                }
+            } else {
+                (None, None)
+            };
+
         debug.log(format!(
-            "  -> save: output={output} ws_idx={} col={column} tile={tile}",
+            "  -> save: output={output} ws_idx={} col={column} tile={tile} column_width={column_width:?} window_height={window_height:?}",
             ws.idx
         ));
         entries.push(WindowEntry {
@@ -85,6 +99,8 @@ pub fn capture(socket: &mut Socket, debug: DebugLog) -> Result<SessionFile> {
             tile,
             is_floating: w.is_floating,
             was_focused: w.is_focused,
+            column_width,
+            window_height,
         });
     }
 

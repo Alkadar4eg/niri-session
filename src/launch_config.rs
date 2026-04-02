@@ -499,6 +499,8 @@ mod tests {
             tile: 1,
             is_floating: false,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         }
     }
 
@@ -515,6 +517,8 @@ mod tests {
             tile: 1,
             is_floating: false,
             was_focused: false,
+            column_width: None,
+            window_height: None,
         };
         let argv = resolve_spawn_command(&w, &cfg).expect("resolve");
         assert_eq!(argv[0], "/opt/google/chrome/chrome");
