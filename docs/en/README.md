@@ -9,6 +9,5 @@ The main project overview is in the [repository README](../../README.md).
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Common issues |
 | [BUILD.md](BUILD.md) | Build, Makefile, niri versions |
 | [CONFIG.md](CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
-| [NIRI_HOTKEY_OVERLAY.md](NIRI_HOTKEY_OVERLAY.md) | niri hotkey overlay, KDL snippet, `niri msg action` |
 
 **Russian:** [docs/ru/README.md](../ru/README.md)

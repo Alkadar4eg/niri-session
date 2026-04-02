@@ -92,8 +92,6 @@ niri-session-manage --load-last
 
 Параметры задержек при загрузке (мс) и переменные окружения описаны в [LOAD_RESTORE.md](LOAD_RESTORE.md). Для отладки: **`-d` / `--debug`** — подробный журнал в stderr (IPC, окна, команды, паузы).
 
-Подсказка по хоткеям niri (оверлей `show-hotkey-overlay`): если в `~/.config/niri/config.kdl` ещё нет этой привязки, см. [NIRI_HOTKEY_OVERLAY.md](NIRI_HOTKEY_OVERLAY.md).
-
 ## Документация
 
 | Документ | Содержание |
@@ -103,7 +101,6 @@ niri-session-manage --load-last
 | [TROUBLESHOOTING.md](TROUBLESHOOTING.md) | Типичные ошибки |
 | [BUILD.md](BUILD.md) | Сборка, Makefile, версии niri |
 | [CONFIG.md](CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
-| [NIRI_HOTKEY_OVERLAY.md](NIRI_HOTKEY_OVERLAY.md) | Хоткей оверлея niri, фрагмент KDL, `niri msg action` |
 
 ## Ограничения (MVP)
 

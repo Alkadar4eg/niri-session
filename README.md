@@ -92,8 +92,6 @@ For windows whose `command` in JSON is not portable (e.g. X11 via `xwayland-sate
 
 Load timing (ms) and environment variables are described in [docs/en/LOAD_RESTORE.md](docs/en/LOAD_RESTORE.md). For debugging, **`-d` / `--debug`** writes a verbose log to stderr (IPC, windows, commands, pauses).
 
-For niri hotkeys (the `show-hotkey-overlay`), if `~/.config/niri/config.kdl` does not yet bind it, see [docs/en/NIRI_HOTKEY_OVERLAY.md](docs/en/NIRI_HOTKEY_OVERLAY.md).
-
 ## Documentation
 
 | Document | Contents |
@@ -103,7 +101,6 @@ For niri hotkeys (the `show-hotkey-overlay`), if `~/.config/niri/config.kdl` doe
 | [docs/en/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) | Common issues |
 | [docs/en/BUILD.md](docs/en/BUILD.md) | Build, Makefile, niri versions |
 | [docs/en/CONFIG.md](docs/en/CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
-| [docs/en/NIRI_HOTKEY_OVERLAY.md](docs/en/NIRI_HOTKEY_OVERLAY.md) | niri hotkey overlay, KDL snippet, `niri msg action` |
 
 ## Limitations (MVP)
 
