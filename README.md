@@ -1,18 +1,20 @@
 # niri-session
 
-Утилита для **сохранения** и **восстановления** набора окон в [niri](https://github.com/niri-wm/niri): мониторы, рабочие столы, порядок колонок и стеков в колонке. Данные берутся через официальный IPC (`niri-ipc`), команды запуска — из `/proc/<pid>/cmdline`, по идее близкой к [hyprsession](https://github.com/joshurtree/hyprsession) для Hyprland.
+A utility to **save** and **restore** a set of windows in [niri](https://github.com/niri-wm/niri): monitors, workspaces, column order, and stack order within a column. Data comes from the official IPC (`niri-ipc`); launch commands are read from `/proc/<pid>/cmdline`, in spirit similar to [hyprsession](https://github.com/joshurtree/hyprsession) for Hyprland.
 
-**Лицензия:** GNU GPL v3 или новее — см. файл [LICENSE](LICENSE).
+**License:** GNU GPL v3 or later — see [LICENSE](LICENSE).
 
-## Зависимости
+**Russian documentation:** [docs/ru/README.md](docs/ru/README.md)
 
-- **Rust:** toolchain не ниже **1.74** (рекомендуется актуальный stable).
-- **niri:** версия бинарника должна **совпадать** с версией крейта `niri-ipc`, с которым собран `niri-session`. В проекте зафиксировано `niri-ipc = "=25.11.0"` — используйте niri **25.11.x** или пересоберите `niri-session` под свою версию niri (см. [docs/BUILD.md](docs/BUILD.md)).
-- Переменная окружения **`NIRI_SOCKET`**: путь к сокету IPC niri. Обычно выставляется автоматически внутри сессии niri; без неё сохранение и загрузка недоступны.
+## Dependencies
 
-## Установка
+- **Rust:** toolchain **1.74** or newer (current stable recommended).
+- **niri:** the niri binary version must **match** the `niri-ipc` crate version `niri-session` was built with. This project pins `niri-ipc = "=25.11.0"` — use niri **25.11.x** or rebuild `niri-session` for your niri version (see [docs/en/BUILD.md](docs/en/BUILD.md)).
+- Environment variable **`NIRI_SOCKET`**: path to niri’s IPC socket. It is usually set automatically inside a niri session; without it, save and load are unavailable.
 
-### Из исходников (`make`)
+## Installation
+
+### From source (`make`)
 
 ```sh
 git clone <URL> niri-session
@@ -21,86 +23,86 @@ make release
 sudo make install PREFIX=/usr/local
 ```
 
-`PREFIX` по умолчанию `/usr/local`; для пакетирования используйте `DESTDIR`, например:
+`PREFIX` defaults to `/usr/local`; for packaging use `DESTDIR`, for example:
 
 ```sh
 make install DESTDIR=/tmp/pkg PREFIX=/usr
 ```
 
-### Скрипт
+### Script
 
 ```sh
 ./scripts/install.sh PREFIX=/usr/local
 ```
 
-(эквивалентно `make install` из корня репозитория).
+(equivalent to `make install` from the repository root.)
 
-### Через Cargo
+### Via Cargo
 
 ```sh
 cargo install --locked --path .
 ```
 
-Бинарник окажется в `~/.cargo/bin` (при стандартной настройке rustup).
+The binary ends up in `~/.cargo/bin` (with a default rustup setup).
 
-## Тесты
+## Tests
 
-Минимальная проверка, что сборка и CLI в порядке:
+Minimal check that the build and CLI work:
 
 ```sh
 make test
-# или: cargo test --locked --all-targets
+# or: cargo test --locked --all-targets
 ```
 
-Есть юнит-тесты (сортировка окон в сессии, JSON roundtrip, чтение `/proc/1/cmdline` на Linux) и интеграционные smoke-тесты бинарника (`--help`, `--version`, ошибки без режима и без `NIRI_SOCKET`). Подробнее — [docs/BUILD.md](docs/BUILD.md).
+There are unit tests (window ordering in a session, JSON roundtrip, reading `/proc/1/cmdline` on Linux) and integration smoke tests for the binary (`--help`, `--version`, errors without a mode and without `NIRI_SOCKET`). Details: [docs/en/BUILD.md](docs/en/BUILD.md).
 
-## Быстрый старт
+## Quick start
 
-Сохранить текущую раскладку в файл:
+Save the current layout to a file:
 
 ```sh
 niri-session --save ~/session.json
 ```
 
-Каталог для файлов сессий по умолчанию — **`[session].default_session_dir`** в `~/.config/niri-session/niri-session.conf` или **`NIRI_SESSION_DIR`**; иначе `~/.config/niri-session/sessions`. Имя без пути (`foo.json`) сохраняется/загружается в этом каталоге; **`--save`** / **`--load`** без аргумента используют **`session.json`** там (см. [docs/CONFIG.md](docs/CONFIG.md)).
+The default directory for session files is **`[session].default_session_dir`** in `~/.config/niri-session/niri-session.conf`, or **`NIRI_SESSION_DIR`**; otherwise `~/.config/niri-session/sessions`. A bare filename (`foo.json`) is saved/loaded in that directory; **`--save`** / **`--load`** with no argument use **`session.json`** there (see [docs/en/CONFIG.md](docs/en/CONFIG.md)).
 
-Восстановить (последовательный фокус столов и **запуск процессов без ожидания окон** — см. [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md)):
+Restore (sequential workspace focus and **process launch without waiting for windows** — see [docs/en/LOAD_RESTORE.md](docs/en/LOAD_RESTORE.md)):
 
 ```sh
 niri-session --load ~/session.json
 ```
 
-**«Мягкое» завершение:** сохранить сессию в файл из **`[session].graceful_shutdown_name`** (по умолчанию имя **`last`** в каталоге сессий) и закрыть все окна:
+**Graceful shutdown:** save the session to the file from **`[session].graceful_shutdown_name`** (by default the name **`last`** in the session directory) and close all windows:
 
 ```sh
 niri-session --graceful-shutdown
 ```
 
-Позже восстановить именно этот снимок:
+Restore that snapshot later:
 
 ```sh
 niri-session --load-last
 ```
 
-Поле **`graceful_shutdown_name`**, разрешение пути и несовместимость с **`--save`/`--load`** — в [docs/CONFIG.md](docs/CONFIG.md).
+The **`graceful_shutdown_name`** field, path resolution, and incompatibility with **`--save`/`--load`** are covered in [docs/en/CONFIG.md](docs/en/CONFIG.md).
 
-Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте в `[[launch]]` поле **`resolve`** (basename проблемной программы или `-listenfd`), `app_id` / заголовок и реальную `command` в `~/.config/niri-session/niri-session.conf` или через `--config`. Секция **`[load]`** задаёт паузы между шагами и уведомления (`notify-send` при ошибке запуска; по умолчанию включено). Подробно: [docs/CONFIG.md](docs/CONFIG.md).
+For windows whose `command` in JSON is not portable (e.g. X11 via `xwayland-satellite`), set **`resolve`** in `[[launch]]` (basename of the problematic binary or `-listenfd`), `app_id` / title, and the real `command` in `~/.config/niri-session/niri-session.conf` or via `--config`. The **`[load]`** section sets pauses between steps and notifications (`notify-send` on launch failure; enabled by default). Details: [docs/en/CONFIG.md](docs/en/CONFIG.md).
 
-Параметры задержек при загрузке (мс) и переменные окружения описаны в [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md). Для отладки: **`-d` / `--debug`** — подробный журнал в stderr (IPC, окна, команды, паузы).
+Load timing (ms) and environment variables are described in [docs/en/LOAD_RESTORE.md](docs/en/LOAD_RESTORE.md). For debugging, **`-d` / `--debug`** writes a verbose log to stderr (IPC, windows, commands, pauses).
 
-Подсказка по хоткеям niri (оверлей `show-hotkey-overlay`): если в `~/.config/niri/config.kdl` ещё нет этой привязки, см. [docs/NIRI_HOTKEY_OVERLAY.md](docs/NIRI_HOTKEY_OVERLAY.md). Строку для вставки в `binds { }` можно вывести командой `niri-session --print-niri-hotkey-overlay-bind`.
+For niri hotkeys (the `show-hotkey-overlay`), if `~/.config/niri/config.kdl` does not yet bind it, see [docs/en/NIRI_HOTKEY_OVERLAY.md](docs/en/NIRI_HOTKEY_OVERLAY.md).
 
-## Документация
+## Documentation
 
-| Документ | Содержание |
-|----------|------------|
-| [docs/SESSION_FORMAT.md](docs/SESSION_FORMAT.md) | Формат JSON-сессии, поле `schema` |
-| [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md) | Поведение `--load`, тайминги, ограничения |
-| [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Типичные ошибки |
-| [docs/BUILD.md](docs/BUILD.md) | Сборка, Makefile, версии niri |
-| [docs/CONFIG.md](docs/CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
-| [docs/NIRI_HOTKEY_OVERLAY.md](docs/NIRI_HOTKEY_OVERLAY.md) | Хоткей оверлея niri, фрагмент KDL, `niri msg action` |
+| Document | Contents |
+|----------|----------|
+| [docs/en/SESSION_FORMAT.md](docs/en/SESSION_FORMAT.md) | JSON session format, `schema` field |
+| [docs/en/LOAD_RESTORE.md](docs/en/LOAD_RESTORE.md) | `--load` behavior, timings, limitations |
+| [docs/en/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md) | Common issues |
+| [docs/en/BUILD.md](docs/en/BUILD.md) | Build, Makefile, niri versions |
+| [docs/en/CONFIG.md](docs/en/CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
+| [docs/en/NIRI_HOTKEY_OVERLAY.md](docs/en/NIRI_HOTKEY_OVERLAY.md) | niri hotkey overlay, KDL snippet, `niri msg action` |
 
-## Ограничения (MVP)
+## Limitations (MVP)
 
-Нет фонового авто-сохранения. Для непереносимых команд в JSON используется конфиг [CONFIG.md](docs/CONFIG.md), а не отдельный «bridge» как в hyprsession. Восстановление раскладки **эвристическое**; тяжёлые случаи (форки Chromium, окна без PID) — в [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md).
+No background auto-save. Non-portable commands in JSON use the config ([CONFIG.md](docs/en/CONFIG.md)), not a separate “bridge” like hyprsession. Layout restoration is **heuristic**; difficult cases (Chromium forks, windows without PID) are in [docs/en/TROUBLESHOOTING.md](docs/en/TROUBLESHOOTING.md).

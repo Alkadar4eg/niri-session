@@ -72,30 +72,8 @@ fn help_exits_zero_and_lists_actions() {
         "help should mention --no-await and spawn-deadline:\n{out}"
     );
     assert!(
-        out.contains("print-niri-hotkey-overlay-bind"),
-        "help should mention print-niri-hotkey-overlay-bind:\n{out}"
-    );
-    assert!(
         out.contains("graceful-shutdown") && out.contains("load-last"),
         "help should mention graceful-shutdown and load-last:\n{out}"
-    );
-}
-
-#[test]
-fn print_niri_hotkey_overlay_bind_exits_zero() {
-    let o = Command::new(bin())
-        .arg("--print-niri-hotkey-overlay-bind")
-        .output()
-        .expect("spawn print bind");
-    assert!(
-        o.status.success(),
-        "stderr={}",
-        String::from_utf8_lossy(&o.stderr)
-    );
-    let out = String::from_utf8_lossy(&o.stdout);
-    assert!(
-        out.contains("show-hotkey-overlay") && out.contains("Mod+Shift+Slash"),
-        "expected KDL bind line, got:\n{out}"
     );
 }
 

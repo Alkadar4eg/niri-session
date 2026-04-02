@@ -51,7 +51,7 @@ niri-session --load ~/session.json --ipc-settle-ms 120 --spawn-start-delay-ms 20
 
 ## Конфиг `[[launch]]` (обязателен для xwayland-satellite и т.п.)
 
-Если сохранённая `command` **непереносимая** (встроенная проверка: `-listenfd`; для мостов вроде **xwayland-satellite** задайте **`resolve`** в правиле), при `--load` без подходящего правила в TOML будет ошибка. См. `resolve` и порядок сопоставления в [CONFIG.md](CONFIG.md). Пример: [niri-session.conf.example](niri-session.conf.example).
+Если сохранённая `command` **непереносимая** (встроенная проверка: `-listenfd`; для мостов вроде **xwayland-satellite** задайте **`resolve`** в правиле), при `--load` без подходящего правила в TOML будет ошибка. См. `resolve` и порядок сопоставления в [CONFIG.md](CONFIG.md). Пример: [niri-session.conf.example](../niri-session.conf.example).
 
 Альтернатива: вручную заменить `command` у окна в JSON — но тогда теряется автоматическое «как в /proc» при следующем `--save`.
 

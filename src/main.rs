@@ -43,13 +43,6 @@ struct Cli {
     #[arg(short = 'l', long = "load", value_name = "PATH", num_args = 0..=1, conflicts_with = "save")]
     load: Option<Option<PathBuf>>,
 
-    /// Print one KDL bind line for `show-hotkey-overlay` (paste into ~/.config/niri/config.kdl if missing)
-    #[arg(
-        long = "print-niri-hotkey-overlay-bind",
-        conflicts_with_all = ["save", "load", "graceful_shutdown", "load_last"]
-    )]
-    print_niri_hotkey_overlay_bind: bool,
-
     /// Save session to `[session].graceful_shutdown_name`, then close all windows via IPC
     #[arg(
         long = "graceful-shutdown",
@@ -109,13 +102,6 @@ fn main() {
 
 fn run() -> Result<()> {
     let cli = Cli::parse();
-
-    if cli.print_niri_hotkey_overlay_bind {
-        let d = DebugLog::new(cli.debug);
-        d.log("print-niri-hotkey-overlay-bind: no IPC");
-        println!(r#"    Mod+Shift+Slash {{ show-hotkey-overlay; }}"#);
-        return Ok(());
-    }
 
     if cli.graceful_shutdown {
         return cmd_graceful_shutdown(&cli);

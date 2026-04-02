@@ -1,6 +1,6 @@
 # Copy to ~/.config/niri-session/niri-session.conf and adjust.
 # Used by: niri-session --load / --save
-# Docs: docs/CONFIG.md
+# Docs: docs/en/CONFIG.md (Russian: docs/ru/CONFIG.md)
 
 [session]
 # default_session_dir = "~/sessions/niri"
