@@ -19,7 +19,7 @@ pub const DEFAULT_SPAWN_DEADLINE_MS: u64 = 10_000;
 /// Parsed `niri-session.conf`.
 #[derive(Debug, Clone, Default, Deserialize)]
 pub struct LaunchConfig {
-    /// Default path for `niri-session --save` without argument. Optional; see [SessionSettings].
+    /// Default path for `niri-session-manage --save` without argument. Optional; see [SessionSettings].
     #[serde(default)]
     pub session: SessionSettings,
     /// Defaults for `--load` (timings, notifications). Optional; see [LoadSettings].
@@ -60,7 +60,7 @@ pub fn graceful_shutdown_session_path(cfg: &LaunchConfig) -> PathBuf {
     resolve_session_file_path(Path::new(&cfg.session.graceful_shutdown_name), cfg)
 }
 
-/// Default basename for `niri-session --save` / `--load` with no PATH argument.
+/// Default basename for `niri-session-manage --save` / `--load` with no PATH argument.
 pub const DEFAULT_SESSION_BASENAME: &str = "session.json";
 
 /// Expands a leading `~/` in a path string to the home directory.
@@ -139,6 +139,8 @@ pub struct LoadSettings {
     pub spawn_deadline: Option<u64>,
     /// If `false`, do not call `notify-send` on launch failures (resolve/spawn/empty command).
     pub notify_on_spawn_failure: Option<bool>,
+    /// If `true`, always spawn even when a matching window already exists (`--open-forcefully`).
+    pub open_forcefully: Option<bool>,
 }
 
 #[derive(Debug, Clone, Deserialize)]

@@ -2,7 +2,7 @@
 
 /// If `Some`, the argv must not be spawned without a `[[launch]]` override: ephemeral session
 /// state (e.g. `-listenfd`). Program-specific bridges (e.g. `xwayland-satellite`) are configured
-/// via `[[launch]].resolve` in `niri-session.conf`.
+/// via `[[launch]].resolve` in `niri-session.conf` (read by `niri-session-manage`).
 pub fn unrestorable_reason(cmd: &[String]) -> Option<&'static str> {
     if cmd.is_empty() {
         return None;

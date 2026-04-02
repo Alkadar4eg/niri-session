@@ -7,7 +7,7 @@
 | Способ | Путь |
 |--------|------|
 | По умолчанию | `$XDG_CONFIG_HOME/niri-session/niri-session.conf` (обычно `~/.config/niri-session/niri-session.conf`) |
-| Явно | `niri-session --load session.json --config /путь/к/файлу.conf` |
+| Явно | `niri-session-manage --load session.json --config /путь/к/файлу.conf` |
 
 Если **не** передан `--config` и файла по умолчанию нет — правил нет: непереносимые окна при загрузке завершатся ошибкой `MissingLaunchOverride` с подсказкой.
 
@@ -30,12 +30,12 @@
 - **Одно имя файла** без `/` (например `work.json`) — файл **каталог/work.json**, где каталог берётся из приоритета выше.
 - **Относительный путь с подкаталогами** (например `backup/foo.json`) — от текущей рабочей директории.
 
-**`niri-session --save`** без аргумента и **`niri-session --load`** без аргумента читают/пишут файл **`session.json`** в этом каталоге.
+**`niri-session-manage --save`** без аргумента и **`niri-session-manage --load`** без аргумента читают/пишут файл **`session.json`** в этом каталоге.
 
 ### `--graceful-shutdown` и `--load-last`
 
-- **`niri-session --graceful-shutdown`** — сначала сохраняет текущую сессию в JSON по пути, вычисленному из **`[session].graceful_shutdown_name`** (те же правила, что для одного имени файла: **`каталог/graceful_shutdown_name`**), затем **закрывает все окна** через IPC (`CloseWindow` по id каждого окна). Удобно перед выходом из сессии: состояние остаётся в файле «последней» сессии, после чего столы пустые.
-- **`niri-session --load-last`** — то же, что **`niri-session --load`** с этим путём (без отдельного аргумента файла). Тайминги и **`[[launch]]`** — как у обычной загрузке (секция **`[load]`**, флаги CLI).
+- **`niri-session-manage --graceful-shutdown`** — сначала сохраняет текущую сессию в JSON по пути, вычисленному из **`[session].graceful_shutdown_name`** (те же правила, что для одного имени файла: **`каталог/graceful_shutdown_name`**), затем **закрывает все окна** через IPC (`CloseWindow` по id каждого окна). Удобно перед выходом из сессии: состояние остаётся в файле «последней» сессии, после чего столы пустые.
+- **`niri-session-manage --load-last`** — то же, что **`niri-session-manage --load`** с этим путём (без отдельного аргумента файла). Тайминги и **`[[launch]]`** — как у обычной загрузке (секция **`[load]`**, флаги CLI).
 
 Режимы **несовместимы** с **`--save`** и **`--load`**; нужен **`NIRI_SOCKET`**, как для сохранения и загрузки.
 
@@ -58,6 +58,7 @@ graceful_shutdown_name = "last.json"
 | `no_await` | boolean | `false` | Если `true` — не ждать появления окна после spawn (аналог `--no-await` в CLI; CLI имеет приоритет). |
 | `spawn_deadline` | integer | `10000` | Лимит миллисекунд ожидания нового окна в niri после spawn (см. `--spawn-deadline` в [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `notify_on_spawn_failure` | boolean | `true` | Вызывать `notify-send` при ошибке подготовки команды или `spawn`. Отключить: `false` здесь или `--no-notify-on-spawn-failure` в CLI. |
+| `open_forcefully` | boolean | `false` | Если `true`, при `--load` всегда выполнять `spawn`, даже если подходящее окно уже есть (как флаг `--open-forcefully`). |
 
 Пример в начале файла:
 

@@ -1,5 +1,7 @@
 # niri-session
 
+Команда в `$PATH`: **`niri-session-manage`** (не пересекается с настройками niri вокруг имени `niri-session`).
+
 Утилита для **сохранения** и **восстановления** набора окон в [niri](https://github.com/niri-wm/niri): мониторы, рабочие столы, порядок колонок и стеков в колонке. Данные берутся через официальный IPC (`niri-ipc`), команды запуска — из `/proc/<pid>/cmdline`, по идее близкой к [hyprsession](https://github.com/joshurtree/hyprsession) для Hyprland.
 
 **Лицензия:** GNU GPL v3 или новее — см. файл [LICENSE](../../LICENSE).
@@ -9,7 +11,7 @@
 ## Зависимости
 
 - **Rust:** toolchain не ниже **1.74** (рекомендуется актуальный stable).
-- **niri:** версия бинарника должна **совпадать** с версией крейта `niri-ipc`, с которым собран `niri-session`. В проекте зафиксировано `niri-ipc = "=25.11.0"` — используйте niri **25.11.x** или пересоберите `niri-session` под свою версию niri (см. [BUILD.md](BUILD.md)).
+- **niri:** версия бинарника должна **совпадать** с версией крейта `niri-ipc`, с которым собран `niri-session-manage`. В проекте зафиксировано `niri-ipc = "=25.11.0"` — используйте niri **25.11.x** или пересоберите `niri-session-manage` под свою версию niri (см. [BUILD.md](BUILD.md)).
 - Переменная окружения **`NIRI_SOCKET`**: путь к сокету IPC niri. Обычно выставляется автоматически внутри сессии niri; без неё сохранение и загрузка недоступны.
 
 ## Установка
@@ -43,7 +45,7 @@ make install DESTDIR=/tmp/pkg PREFIX=/usr
 cargo install --locked --path .
 ```
 
-Бинарник окажется в `~/.cargo/bin` (при стандартной настройке rustup).
+Бинарник **`niri-session-manage`** окажется в `~/.cargo/bin` (при стандартной настройке rustup).
 
 ## Тесты
 
@@ -61,7 +63,7 @@ make test
 Сохранить текущую раскладку в файл:
 
 ```sh
-niri-session --save ~/session.json
+niri-session-manage --save ~/session.json
 ```
 
 Каталог для файлов сессий по умолчанию — **`[session].default_session_dir`** в `~/.config/niri-session/niri-session.conf` или **`NIRI_SESSION_DIR`**; иначе `~/.config/niri-session/sessions`. Имя без пути (`foo.json`) сохраняется/загружается в этом каталоге; **`--save`** / **`--load`** без аргумента используют **`session.json`** там (см. [CONFIG.md](CONFIG.md)).
@@ -69,19 +71,19 @@ niri-session --save ~/session.json
 Восстановить (последовательный фокус столов и **запуск процессов без ожидания окон** — см. [LOAD_RESTORE.md](LOAD_RESTORE.md)):
 
 ```sh
-niri-session --load ~/session.json
+niri-session-manage --load ~/session.json
 ```
 
 **«Мягкое» завершение:** сохранить сессию в файл из **`[session].graceful_shutdown_name`** (по умолчанию имя **`last`** в каталоге сессий) и закрыть все окна:
 
 ```sh
-niri-session --graceful-shutdown
+niri-session-manage --graceful-shutdown
 ```
 
 Позже восстановить именно этот снимок:
 
 ```sh
-niri-session --load-last
+niri-session-manage --load-last
 ```
 
 Поле **`graceful_shutdown_name`**, разрешение пути и несовместимость с **`--save`/`--load`** — в [CONFIG.md](CONFIG.md).

@@ -1,5 +1,7 @@
 # niri-session
 
+Installed command: **`niri-session-manage`** (avoids clashing with niri’s own session-related naming).
+
 A utility to **save** and **restore** a set of windows in [niri](https://github.com/niri-wm/niri): monitors, workspaces, column order, and stack order within a column. Data comes from the official IPC (`niri-ipc`); launch commands are read from `/proc/<pid>/cmdline`, in spirit similar to [hyprsession](https://github.com/joshurtree/hyprsession) for Hyprland.
 
 **License:** GNU GPL v3 or later — see [LICENSE](LICENSE).
@@ -9,7 +11,7 @@ A utility to **save** and **restore** a set of windows in [niri](https://github.
 ## Dependencies
 
 - **Rust:** toolchain **1.74** or newer (current stable recommended).
-- **niri:** the niri binary version must **match** the `niri-ipc` crate version `niri-session` was built with. This project pins `niri-ipc = "=25.11.0"` — use niri **25.11.x** or rebuild `niri-session` for your niri version (see [docs/en/BUILD.md](docs/en/BUILD.md)).
+- **niri:** the niri binary version must **match** the `niri-ipc` version **niri-session-manage** was built with. This project pins `niri-ipc = "=25.11.0"` — use niri **25.11.x** or rebuild **niri-session-manage** for your niri version (see [docs/en/BUILD.md](docs/en/BUILD.md)).
 - Environment variable **`NIRI_SOCKET`**: path to niri’s IPC socket. It is usually set automatically inside a niri session; without it, save and load are unavailable.
 
 ## Installation
@@ -43,7 +45,7 @@ make install DESTDIR=/tmp/pkg PREFIX=/usr
 cargo install --locked --path .
 ```
 
-The binary ends up in `~/.cargo/bin` (with a default rustup setup).
+The **`niri-session-manage`** binary ends up in `~/.cargo/bin` (with a default rustup setup).
 
 ## Tests
 
@@ -61,7 +63,7 @@ There are unit tests (window ordering in a session, JSON roundtrip, reading `/pr
 Save the current layout to a file:
 
 ```sh
-niri-session --save ~/session.json
+niri-session-manage --save ~/session.json
 ```
 
 The default directory for session files is **`[session].default_session_dir`** in `~/.config/niri-session/niri-session.conf`, or **`NIRI_SESSION_DIR`**; otherwise `~/.config/niri-session/sessions`. A bare filename (`foo.json`) is saved/loaded in that directory; **`--save`** / **`--load`** with no argument use **`session.json`** there (see [docs/en/CONFIG.md](docs/en/CONFIG.md)).
@@ -69,19 +71,19 @@ The default directory for session files is **`[session].default_session_dir`** i
 Restore (sequential workspace focus and **process launch without waiting for windows** — see [docs/en/LOAD_RESTORE.md](docs/en/LOAD_RESTORE.md)):
 
 ```sh
-niri-session --load ~/session.json
+niri-session-manage --load ~/session.json
 ```
 
 **Graceful shutdown:** save the session to the file from **`[session].graceful_shutdown_name`** (by default the name **`last`** in the session directory) and close all windows:
 
 ```sh
-niri-session --graceful-shutdown
+niri-session-manage --graceful-shutdown
 ```
 
 Restore that snapshot later:
 
 ```sh
-niri-session --load-last
+niri-session-manage --load-last
 ```
 
 The **`graceful_shutdown_name`** field, path resolution, and incompatibility with **`--save`/`--load`** are covered in [docs/en/CONFIG.md](docs/en/CONFIG.md).

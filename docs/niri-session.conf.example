@@ -1,5 +1,5 @@
 # Copy to ~/.config/niri-session/niri-session.conf and adjust.
-# Used by: niri-session --load / --save
+# Used by: niri-session-manage --load / --save
 # Docs: docs/en/CONFIG.md (Russian: docs/ru/CONFIG.md)
 
 [session]

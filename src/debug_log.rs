@@ -10,7 +10,7 @@ impl DebugLog {
 
     pub fn log(self, msg: impl AsRef<str>) {
         if self.0 {
-            eprintln!("niri-session(debug): {}", msg.as_ref());
+            eprintln!("niri-session-manage(debug): {}", msg.as_ref());
         }
     }
 }

@@ -7,7 +7,7 @@ A single TOML file: **`[session]`** section (default session directory and filen
 | Method | Path |
 |--------|------|
 | Default | `$XDG_CONFIG_HOME/niri-session/niri-session.conf` (usually `~/.config/niri-session/niri-session.conf`) |
-| Explicit | `niri-session --load session.json --config /path/to/file.conf` |
+| Explicit | `niri-session-manage --load session.json --config /path/to/file.conf` |
 
 If **`--config`** is **not** passed and the default file is missing — there are no rules: non-portable windows will fail on load with `MissingLaunchOverride` and a hint.
 
@@ -30,12 +30,12 @@ How paths work for **`--save`** / **`--load`**:
 - **Single filename** without `/` (e.g. `work.json`) — **`directory/work.json`** where `directory` comes from the priority above.
 - **Relative path with subdirs** (e.g. `backup/foo.json`) — relative to the current working directory.
 
-**`niri-session --save`** with no argument and **`niri-session --load`** with no argument read/write **`session.json`** in that directory.
+**`niri-session-manage --save`** with no argument and **`niri-session-manage --load`** with no argument read/write **`session.json`** in that directory.
 
 ### `--graceful-shutdown` and `--load-last`
 
-- **`niri-session --graceful-shutdown`** — first saves the current session to JSON at the path derived from **`[session].graceful_shutdown_name`** (same rules as a single filename: **`directory/graceful_shutdown_name`**), then **closes all windows** via IPC (`CloseWindow` for each id). Handy before leaving the session: state is stored in the “last” session file, then workspaces are empty.
-- **`niri-session --load-last`** — same as **`niri-session --load`** with that path (no separate file argument). Timings and **`[[launch]]`** behave like normal load ( **`[load]`** section, CLI flags).
+- **`niri-session-manage --graceful-shutdown`** — first saves the current session to JSON at the path derived from **`[session].graceful_shutdown_name`** (same rules as a single filename: **`directory/graceful_shutdown_name`**), then **closes all windows** via IPC (`CloseWindow` for each id). Handy before leaving the session: state is stored in the “last” session file, then workspaces are empty.
+- **`niri-session-manage --load-last`** — same as **`niri-session-manage --load`** with that path (no separate file argument). Timings and **`[[launch]]`** behave like normal load ( **`[load]`** section, CLI flags).
 
 These modes are **incompatible** with **`--save`** and **`--load`**; **`NIRI_SOCKET`** is required, as for save and load.
 
@@ -58,6 +58,7 @@ All fields are optional. Priority: **CLI arguments** or **environment variables*
 | `no_await` | boolean | `false` | If `true`, do not wait for a window after spawn (like `--no-await` in CLI; CLI wins). |
 | `spawn_deadline` | integer | `10000` | Max milliseconds to wait for a new window in niri after spawn (see `--spawn-deadline` in [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `notify_on_spawn_failure` | boolean | `true` | Call `notify-send` on command preparation or `spawn` failure. Disable with `false` here or `--no-notify-on-spawn-failure` in CLI. |
+| `open_forcefully` | boolean | `false` | If `true`, always spawn on `--load` even when a matching window already exists (same as `--open-forcefully`). |
 
 Example at the top of the file:
 

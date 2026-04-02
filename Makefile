@@ -14,7 +14,7 @@ debug:
 
 install: release
 	install -d "$(DESTDIR)$(PREFIX)/bin"
-	install -m 755 target/release/niri-session "$(DESTDIR)$(PREFIX)/bin/niri-session"
+	install -m 755 target/release/niri-session-manage "$(DESTDIR)$(PREFIX)/bin/niri-session-manage"
 
 fmt:
 	$(CARGO) fmt --all

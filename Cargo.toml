@@ -8,7 +8,7 @@ license = "GPL-3.0-or-later"
 readme = "README.md"
 
 [[bin]]
-name = "niri-session"
+name = "niri-session-manage"
 path = "src/main.rs"
 
 [dependencies]

@@ -12,11 +12,11 @@ If empty, you are not on niri or the session does not export the variable (rare)
 
 ## IPC errors / version mismatch
 
-Messages like “unexpected IPC response” or niri errors on `Action` often mean **version mismatch** between niri and the `niri-ipc` crate `niri-session` was built with. Build the project with `niri-ipc` matching your niri (`niri --version`), or install niri from the same release as the dependency in `Cargo.toml`.
+Messages like “unexpected IPC response” or niri errors on `Action` often mean **version mismatch**: your niri build does not match the `niri-ipc` API **niri-session-manage** was compiled against. Build the project with `niri-ipc` matching your niri (`niri --version`), or install niri from the same release as the dependency in `Cargo.toml`.
 
 ## `--graceful-shutdown` closed all windows
 
-**`niri-session --graceful-shutdown`** saves JSON then calls IPC **`CloseWindow`** for every window: no confirmation and no distinction for “important” apps. Unsaved data in applications may be lost — use deliberately (e.g. before `niri msg action quit` or leaving the session).
+**`niri-session-manage --graceful-shutdown`** saves JSON then calls IPC **`CloseWindow`** for every window: no confirmation and no distinction for “important” apps. Unsaved data in applications may be lost — use deliberately (e.g. before `niri msg action quit` or leaving the session).
 
 ## Slow or stuttering `--load`
 
@@ -27,7 +27,7 @@ On **launch** failure (or missing `[[launch]]` rule), the log shows `window skip
 ## Empty or invalid JSON
 
 - Ensure the file was written completely and is valid JSON.
-- The `schema` field must be supported by your `niri-session` version.
+- The `schema` field must be supported by your `niri-session-manage` version.
 
 ## Empty window list after `--save`
 

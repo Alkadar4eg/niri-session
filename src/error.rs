@@ -5,7 +5,7 @@ use thiserror::Error;
 
 #[derive(Error, Debug)]
 pub enum Error {
-    #[error("NIRI_SOCKET is not set; run niri-session inside an active niri session")]
+    #[error("NIRI_SOCKET is not set; run niri-session-manage inside an active niri session")]
     NiriSocketMissing,
 
     #[error("IPC I/O error: {0}")]

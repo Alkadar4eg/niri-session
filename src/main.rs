@@ -26,7 +26,7 @@ use crate::restore::Timing;
 
 #[derive(Parser, Debug)]
 #[command(
-    name = "niri-session",
+    name = "niri-session-manage",
     version,
     about = "Save and restore niri window sessions (JSON)"
 )]
@@ -91,11 +91,15 @@ struct Cli {
     /// Disable desktop notification on launch failures (resolve/spawn/empty command)
     #[arg(long = "no-notify-on-spawn-failure", default_value_t = false, action = clap::ArgAction::SetTrue)]
     no_notify_on_spawn_failure: bool,
+
+    /// Spawn every app even when a matching window already exists on the workspace (overrides skip)
+    #[arg(long = "open-forcefully", default_value_t = false, action = clap::ArgAction::SetTrue)]
+    open_forcefully: bool,
 }
 
 fn main() {
     if let Err(e) = run() {
-        eprintln!("niri-session: {e}");
+        eprintln!("niri-session-manage: {e}");
         std::process::exit(1);
     }
 }
@@ -217,6 +221,8 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
     let notify_on_failure =
         launch_config::merged_notify_on_failure(cli.no_notify_on_spawn_failure, launch_cfg);
     d.log(format!("notify_on_launch_failure={notify_on_failure}"));
+    let open_forcefully = merged_open_forcefully(cli, launch_cfg);
+    d.log(format!("open_forcefully={open_forcefully}"));
     let mut socket = ipc::connect(d)?;
     restore::restore(
         &mut socket,
@@ -224,8 +230,13 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
         &timings,
         launch_cfg,
         notify_on_failure,
+        open_forcefully,
         d,
     )
+}
+
+fn merged_open_forcefully(cli: &Cli, cfg: &LaunchConfig) -> bool {
+    cli.open_forcefully || cfg.load.open_forcefully.unwrap_or(false)
 }
 
 fn merged_timing(cli: &Cli, cfg: &LaunchConfig) -> Timing {

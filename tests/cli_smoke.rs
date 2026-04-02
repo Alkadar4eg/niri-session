@@ -1,19 +1,19 @@
-//! Smoke tests for the `niri-session` binary (help, version, basic error paths).
+//! Smoke tests for the `niri-session-manage` binary (help, version, basic error paths).
 
 use std::path::{Path, PathBuf};
 use std::process::Command;
 
-/// Path to the freshly built `niri-session` binary.
+/// Path to the freshly built `niri-session-manage` binary.
 ///
-/// Cargo normally sets `CARGO_BIN_EXE_niri_session` when running integration tests; if it is
-/// missing (unusual environments), we fall back to `target/<profile>/niri-session` under the
+/// Cargo normally sets `CARGO_BIN_EXE_niri_session_manage` when running integration tests; if it is
+/// missing (unusual environments), we fall back to `target/<profile>/niri-session-manage` under the
 /// manifest dir or `CARGO_TARGET_DIR`.
 fn bin() -> PathBuf {
-    if let Ok(p) = std::env::var("CARGO_BIN_EXE_niri_session") {
+    if let Ok(p) = std::env::var("CARGO_BIN_EXE_niri_session_manage") {
         let path = PathBuf::from(p);
         assert!(
             path.exists(),
-            "CARGO_BIN_EXE_niri_session points at missing file: {}",
+            "CARGO_BIN_EXE_niri_session_manage points at missing file: {}",
             path.display()
         );
         return path;
@@ -28,10 +28,10 @@ fn bin() -> PathBuf {
     } else {
         "release"
     };
-    let path = target_dir.join(profile).join("niri-session");
+    let path = target_dir.join(profile).join("niri-session-manage");
     assert!(
         path.exists(),
-        "niri-session binary not found at {}. Run `cargo build` or `cargo test` from the crate root first.",
+        "niri-session-manage binary not found at {}. Run `cargo build` or `cargo test` from the crate root first.",
         path.display()
     );
     path
@@ -42,7 +42,7 @@ fn help_exits_zero_and_lists_actions() {
     let o = Command::new(bin())
         .arg("--help")
         .output()
-        .expect("spawn niri-session --help");
+        .expect("spawn niri-session-manage --help");
     assert!(
         o.status.success(),
         "stderr={}",
@@ -53,7 +53,10 @@ fn help_exits_zero_and_lists_actions() {
         out.contains("-d") && out.contains("--debug"),
         "help should mention -d and --debug:\n{out}"
     );
-    assert!(out.contains("--save"), "help should mention --save:\n{out}");
+    assert!(
+        out.contains("--save"),
+        "help should mention --save:\n{out}"
+    );
     assert!(out.contains("--load"), "help should mention --load:\n{out}");
     assert!(
         out.contains("ipc-settle-ms") || out.contains("ipc_settle"),
@@ -75,6 +78,10 @@ fn help_exits_zero_and_lists_actions() {
         out.contains("graceful-shutdown") && out.contains("load-last"),
         "help should mention graceful-shutdown and load-last:\n{out}"
     );
+    assert!(
+        out.contains("open-forcefully"),
+        "help should mention --open-forcefully:\n{out}"
+    );
 }
 
 #[test]
@@ -82,11 +89,11 @@ fn version_exits_zero() {
     let o = Command::new(bin())
         .arg("--version")
         .output()
-        .expect("spawn niri-session --version");
+        .expect("spawn niri-session-manage --version");
     assert!(o.status.success());
     let out = String::from_utf8_lossy(&o.stdout);
     assert!(
-        out.contains("niri-session"),
+        out.contains("niri-session-manage"),
         "expected version string, got:\n{out}"
     );
 }
@@ -95,7 +102,7 @@ fn version_exits_zero() {
 fn no_save_or_load_fails() {
     let o = Command::new(bin())
         .output()
-        .expect("spawn niri-session with no args");
+        .expect("spawn niri-session-manage with no args");
     assert!(
         !o.status.success(),
         "expected failure without --save/--load"
@@ -115,7 +122,7 @@ fn save_without_niri_socket_fails_cleanly() {
         .arg("--save")
         .arg(&tmp)
         .output()
-        .expect("spawn niri-session --save");
+        .expect("spawn niri-session-manage --save");
     assert!(!o.status.success(), "save without NIRI_SOCKET should fail");
     let err = String::from_utf8_lossy(&o.stderr);
     assert!(

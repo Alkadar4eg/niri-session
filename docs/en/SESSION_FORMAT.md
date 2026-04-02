@@ -1,6 +1,6 @@
 # Session file format (JSON)
 
-The file is written by `niri-session --save` and read by `niri-session --load`.
+The file is written by `niri-session-manage --save` and read by `niri-session-manage --load`.
 
 ## Schema version
 
@@ -40,7 +40,7 @@ The **`schema`** field (integer): current format version is **`1`**. Breaking st
 
 Windows with unknown PID or no command line in `/proc` at save time are **skipped** (cannot be restored with this model).
 
-**Chrome/Chromium installed PWA** windows may share one browser PID: `/proc` may then have the wrong `--app-id=` for a given window. On **`--save`** and **`--load`**, `niri-session` aligns **`--app-id=`** with **`app_id`** when it looks like `chrome-<id>-…` / `chromium-<id>-…` (opaque id up to the first `-` after the prefix).
+**Chrome/Chromium installed PWA** windows may share one browser PID: `/proc` may then have the wrong `--app-id=` for a given window. On **`--save`** and **`--load`**, `niri-session-manage` aligns **`--app-id=`** with **`app_id`** when it looks like `chrome-<id>-…` / `chromium-<id>-…` (opaque id up to the first `-` after the prefix).
 
 For windows like **xwayland-satellite** with **`-listenfd`**, JSON keeps the real `command` from `/proc` (not suitable to relaunch). On **`--load`**, the real `argv` comes from TOML [`[[launch]]`](CONFIG.md) matching `app_id` / `title_contains` and **`resolve`**. Fields `output`, `workspace_idx`, `column`, `tile`, `is_floating` drive **focus order** before each launch; exact column/tile layout from JSON is **not** restored (see [LOAD_RESTORE.md](LOAD_RESTORE.md)).
 
@@ -71,5 +71,5 @@ In a real file, `outputs` is fully populated; it is shortened here for readabili
 
 ## Compatibility
 
-- **niri version** should match the `niri-ipc` dependency of your built `niri-session`.
+- **niri version** should match the `niri-ipc` dependency of your built `niri-session-manage`.
 - Manual edits to `command` are allowed (e.g. to launch Flatpak instead of the binary from `/proc`).

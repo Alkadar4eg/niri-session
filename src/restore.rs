@@ -11,7 +11,7 @@ use std::thread;
 use std::time::{Duration, Instant};
 
 use niri_ipc::socket::Socket;
-use niri_ipc::{Action, WorkspaceReferenceArg};
+use niri_ipc::{Action, Window, Workspace, WorkspaceReferenceArg};
 
 use crate::debug_log::DebugLog;
 use crate::error::{Error, Result};
@@ -54,6 +54,7 @@ pub fn restore(
     timings: &Timing,
     launch_cfg: &LaunchConfig,
     notify_on_spawn_failure: bool,
+    open_forcefully: bool,
     debug: DebugLog,
 ) -> Result<()> {
     let sorted = session.sorted_windows();
@@ -72,6 +73,7 @@ pub fn restore(
                 timings,
                 launch_cfg,
                 notify_on_spawn_failure,
+                open_forcefully,
                 debug,
             )
         } else {
@@ -81,11 +83,12 @@ pub fn restore(
                 timings,
                 launch_cfg,
                 notify_on_spawn_failure,
+                open_forcefully,
                 debug,
             )
         };
         if let Err(e) = r {
-            eprintln!("niri-session: окно пропущено: {e}");
+            eprintln!("niri-session-manage: окно пропущено: {e}");
             failed += 1;
         }
     }
@@ -104,11 +107,66 @@ fn sleep_ms(ms: u64, debug: DebugLog, label: &str) {
     }
 }
 
-fn window_ids(socket: &mut Socket, debug: DebugLog) -> Result<HashSet<u64>> {
-    Ok(ipc::windows(socket, debug)?
-        .into_iter()
+fn resolve_workspace_id(workspaces: &[Workspace], output: &str, workspace_idx: u8) -> Option<u64> {
+    workspaces
+        .iter()
+        .find(|w| w.output.as_deref() == Some(output) && w.idx == workspace_idx)
         .map(|w| w.id)
-        .collect())
+}
+
+fn identity_matches_floating(saved: &WindowEntry, live: &Window) -> bool {
+    match (&saved.app_id, &live.app_id) {
+        (Some(a), Some(b)) if a == b => match (&saved.title, &live.title) {
+            (Some(st), Some(lt)) => st == lt || lt.contains(st.as_str()) || st.contains(lt.as_str()),
+            (None, None) => true,
+            _ => false,
+        },
+        (None, None) => saved.title == live.title,
+        _ => false,
+    }
+}
+
+fn identity_matches_tiled(saved: &WindowEntry, live: &Window) -> bool {
+    match (&saved.app_id, &live.app_id) {
+        (Some(a), Some(b)) if a == b => true,
+        (None, None) => saved.title == live.title,
+        _ => false,
+    }
+}
+
+fn live_window_matches_saved_slot(saved: &WindowEntry, live: &Window, ws_id: u64) -> bool {
+    if live.workspace_id != Some(ws_id) {
+        return false;
+    }
+    if saved.is_floating != live.is_floating {
+        return false;
+    }
+    if saved.is_floating {
+        return identity_matches_floating(saved, live);
+    }
+    match live.layout.pos_in_scrolling_layout {
+        Some((col, tile)) if col == saved.column && tile == saved.tile => {
+            identity_matches_tiled(saved, live)
+        }
+        _ => false,
+    }
+}
+
+fn window_already_open(
+    saved: &WindowEntry,
+    workspaces: &[Workspace],
+    windows: &[Window],
+    open_forcefully: bool,
+) -> bool {
+    if open_forcefully {
+        return false;
+    }
+    let Some(ws_id) = resolve_workspace_id(workspaces, &saved.output, saved.workspace_idx) else {
+        return false;
+    };
+    windows
+        .iter()
+        .any(|live| live_window_matches_saved_slot(saved, live, ws_id))
 }
 
 /// Ждём появления нового id окна после spawn (дифф множеств), не дольше `timings.spawn_deadline_ms`.
@@ -193,7 +251,7 @@ fn spawn_program(
             debug.log(format!("spawn: Err({e})"));
             if notify_on_spawn_failure {
                 notify_user::spawn_or_window_failure(
-                    "niri-session: не удалось запустить процесс",
+                    "niri-session-manage: не удалось запустить процесс",
                     &format!("{cmd_display}\n{}", e),
                 );
             }
@@ -214,6 +272,7 @@ fn restore_column_stack(
     timings: &Timing,
     launch_cfg: &LaunchConfig,
     notify_on_spawn_failure: bool,
+    open_forcefully: bool,
     debug: DebugLog,
 ) -> Result<()> {
     let col = wins[0].column;
@@ -240,7 +299,7 @@ fn restore_column_stack(
                 debug.log(format!("resolve_spawn_command -> Err({e})"));
                 if notify_on_spawn_failure {
                     notify_user::spawn_or_window_failure(
-                        "niri-session: не удалось подготовить запуск",
+                        "niri-session-manage: не удалось подготовить запуск",
                         &e.to_string(),
                     );
                 }
@@ -251,7 +310,7 @@ fn restore_column_stack(
         if command.is_empty() {
             if notify_on_spawn_failure {
                 notify_user::spawn_or_window_failure(
-                    "niri-session: пустая команда",
+                    "niri-session-manage: пустая команда",
                     &format!("app_id={:?} title={:?}", win.app_id, win.title),
                 );
             }
@@ -260,7 +319,21 @@ fn restore_column_stack(
 
         let cmd_display = command.join(" ");
 
-        let before_ids = window_ids(socket, debug)?;
+        let workspaces = ipc::workspaces(socket, debug)?;
+        let windows = ipc::windows(socket, debug)?;
+        if window_already_open(win, &workspaces, &windows, open_forcefully) {
+            debug.log(format!(
+                "skip: window already open (app_id={:?} title={:?})",
+                win.app_id, win.title
+            ));
+            eprintln!(
+                "niri-session-manage: пропуск: окно уже открыто (app_id={:?}, title={:?})",
+                win.app_id, win.title
+            );
+            continue;
+        }
+
+        let before_ids: HashSet<u64> = windows.iter().map(|w| w.id).collect();
 
         ipc::action(
             socket,
@@ -332,6 +405,7 @@ fn restore_one(
     timings: &Timing,
     launch_cfg: &LaunchConfig,
     notify_on_spawn_failure: bool,
+    open_forcefully: bool,
     debug: DebugLog,
 ) -> Result<()> {
     debug.log(format!(
@@ -355,7 +429,7 @@ fn restore_one(
             debug.log(format!("resolve_spawn_command -> Err({e})"));
             if notify_on_spawn_failure {
                 notify_user::spawn_or_window_failure(
-                    "niri-session: не удалось подготовить запуск",
+                    "niri-session-manage: не удалось подготовить запуск",
                     &e.to_string(),
                 );
             }
@@ -367,7 +441,7 @@ fn restore_one(
         debug.log("empty argv after resolve");
         if notify_on_spawn_failure {
             notify_user::spawn_or_window_failure(
-                "niri-session: пустая команда",
+                "niri-session-manage: пустая команда",
                 &format!("app_id={:?} title={:?}", win.app_id, win.title),
             );
         }
@@ -378,7 +452,21 @@ fn restore_one(
 
     focus_monitor_workspace(socket, win, timings, debug)?;
 
-    let before_ids = window_ids(socket, debug)?;
+    let workspaces = ipc::workspaces(socket, debug)?;
+    let windows = ipc::windows(socket, debug)?;
+    if window_already_open(win, &workspaces, &windows, open_forcefully) {
+        debug.log(format!(
+            "skip: window already open (app_id={:?} title={:?})",
+            win.app_id, win.title
+        ));
+        eprintln!(
+            "niri-session-manage: пропуск: окно уже открыто (app_id={:?}, title={:?})",
+            win.app_id, win.title
+        );
+        return Ok(());
+    }
+
+    let before_ids: HashSet<u64> = windows.iter().map(|w| w.id).collect();
 
     spawn_program(
         &command,
@@ -400,4 +488,143 @@ fn restore_one(
 
     debug.log("window restore step done");
     Ok(())
+}
+
+#[cfg(test)]
+mod matching_tests {
+    use super::*;
+    use niri_ipc::WindowLayout;
+
+    fn layout(pos: Option<(usize, usize)>) -> WindowLayout {
+        WindowLayout {
+            pos_in_scrolling_layout: pos,
+            tile_size: (100.0, 100.0),
+            window_size: (100, 100),
+            tile_pos_in_workspace_view: None,
+            window_offset_in_tile: (0.0, 0.0),
+        }
+    }
+
+    fn win(
+        id: u64,
+        ws_id: u64,
+        app_id: Option<&str>,
+        title: Option<&str>,
+        pos: Option<(usize, usize)>,
+        floating: bool,
+    ) -> Window {
+        Window {
+            id,
+            title: title.map(str::to_string),
+            app_id: app_id.map(str::to_string),
+            pid: Some(1),
+            workspace_id: Some(ws_id),
+            is_focused: false,
+            is_floating: floating,
+            is_urgent: false,
+            layout: layout(pos),
+            focus_timestamp: None,
+        }
+    }
+
+    fn ws(id: u64, idx: u8, output: &str) -> Workspace {
+        Workspace {
+            id,
+            idx,
+            name: None,
+            output: Some(output.to_string()),
+            is_urgent: false,
+            is_active: true,
+            is_focused: false,
+            active_window_id: None,
+        }
+    }
+
+    fn entry(
+        output: &str,
+        workspace_idx: u8,
+        column: usize,
+        tile: usize,
+        floating: bool,
+        app_id: Option<&str>,
+        title: Option<&str>,
+    ) -> WindowEntry {
+        WindowEntry {
+            command: vec!["x".into()],
+            app_id: app_id.map(str::to_string),
+            title: title.map(str::to_string),
+            output: output.into(),
+            workspace_idx,
+            column,
+            tile,
+            is_floating: floating,
+        }
+    }
+
+    #[test]
+    fn already_open_tiled_same_slot_and_app_id() {
+        let saved = entry("HDMI-A-1", 1, 2, 1, false, Some("foot"), None);
+        let workspaces = vec![ws(10, 1, "HDMI-A-1")];
+        let windows = vec![win(1, 10, Some("foot"), Some("a"), Some((2, 1)), false)];
+        assert!(window_already_open(
+            &saved,
+            &workspaces,
+            &windows,
+            false
+        ));
+    }
+
+    #[test]
+    fn already_open_false_when_wrong_tile() {
+        let saved = entry("HDMI-A-1", 1, 2, 1, false, Some("foot"), None);
+        let workspaces = vec![ws(10, 1, "HDMI-A-1")];
+        let windows = vec![win(1, 10, Some("foot"), None, Some((2, 2)), false)];
+        assert!(!window_already_open(
+            &saved,
+            &workspaces,
+            &windows,
+            false
+        ));
+    }
+
+    #[test]
+    fn open_forcefully_disables_skip() {
+        let saved = entry("HDMI-A-1", 1, 2, 1, false, Some("foot"), None);
+        let workspaces = vec![ws(10, 1, "HDMI-A-1")];
+        let windows = vec![win(1, 10, Some("foot"), None, Some((2, 1)), false)];
+        assert!(!window_already_open(
+            &saved,
+            &workspaces,
+            &windows,
+            true
+        ));
+    }
+
+    #[test]
+    fn floating_matches_app_id_and_title_substring() {
+        let saved = entry(
+            "HDMI-A-1",
+            1,
+            1,
+            1,
+            true,
+            Some("org.app"),
+            Some("Doc"),
+        );
+        let workspaces = vec![ws(10, 1, "HDMI-A-1")];
+        let windows = vec![win(
+            1,
+            10,
+            Some("org.app"),
+            Some("Doc — edited"),
+            None,
+            true,
+        )];
+        assert!(window_already_open(
+            &saved,
+            &workspaces,
+            &windows,
+            false
+        ));
+    }
 }
