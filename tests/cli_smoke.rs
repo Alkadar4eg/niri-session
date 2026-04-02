@@ -68,6 +68,10 @@ fn help_exits_zero_and_lists_actions() {
         "help should mention spawn-start-delay and notify flags:\n{out}"
     );
     assert!(
+        out.contains("--no-await") && out.contains("spawn-deadline"),
+        "help should mention --no-await and spawn-deadline:\n{out}"
+    );
+    assert!(
         out.contains("print-niri-hotkey-overlay-bind"),
         "help should mention print-niri-hotkey-overlay-bind:\n{out}"
     );

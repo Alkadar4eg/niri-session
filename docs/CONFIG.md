@@ -55,6 +55,8 @@ graceful_shutdown_name = "last.json"
 |------|-----|----------------|--------|
 | `ipc_settle_ms` | integer | `80` | Пауза после IPC фокуса и после каждого успешного spawn (см. [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `spawn_start_delay_ms` | integer | `0` | Дополнительная пауза после spawn перед следующим окном. |
+| `no_await` | boolean | `false` | Если `true` — не ждать появления окна после spawn (аналог `--no-await` в CLI; CLI имеет приоритет). |
+| `spawn_deadline` | integer | `10000` | Лимит миллисекунд ожидания нового окна в niri после spawn (см. `--spawn-deadline` в [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `notify_on_spawn_failure` | boolean | `true` | Вызывать `notify-send` при ошибке подготовки команды или `spawn`. Отключить: `false` здесь или `--no-notify-on-spawn-failure` в CLI. |
 
 Пример в начале файла:
@@ -116,6 +118,6 @@ app_id = "org.mozilla.firefox"
 command = ["flatpak", "run", "org.mozilla.firefox"]
 ```
 
-Секции `[[launch]]` задают **команду запуска** для непереносимых `command` в JSON; `[load]` — **паузы между шагами загрузки** и уведомления. Раскладка колонок/плиток из JSON при `--load` **не применяется** (стратегия «запустил и забыл»), порядок окон влияет на то, на каком столе окажется фокус перед каждым `spawn`.
+Секции `[[launch]]` задают **команду запуска** для непереносимых `command` в JSON; `[load]` — **паузы**, **ожидание появления окон** и уведомления. Точная геометрия тайлов из JSON при `--load` **не восстанавливается**; по умолчанию шаги идут **по очереди с ожиданием** нового окна (см. [LOAD_RESTORE.md](LOAD_RESTORE.md)), либо режим «запустил и забыл» через `no_await` / `--no-await`.
 
 См. также [LOAD_RESTORE.md](LOAD_RESTORE.md), [TROUBLESHOOTING.md](TROUBLESHOOTING.md).

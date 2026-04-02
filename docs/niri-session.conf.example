@@ -9,6 +9,8 @@
 [load]
 # ipc_settle_ms = 100
 # spawn_start_delay_ms = 200
+# no_await = false
+# spawn_deadline = 10000
 # notify_on_spawn_failure = true
 
 # command — массив или одна строка с аргументами:

@@ -56,6 +56,31 @@ impl SessionFile {
         v.sort_by(|a, b| a.sort_key().cmp(&b.sort_key()));
         v
     }
+
+    /// Группы подряд идущих тайловых окон с одним `(output, workspace_idx, column)` — для `--load`
+    /// в колонку-стек. Плавающие окна — по одному в группе.
+    pub fn column_groups<'a>(sorted: &[&'a WindowEntry]) -> Vec<Vec<&'a WindowEntry>> {
+        let mut groups: Vec<Vec<&'a WindowEntry>> = Vec::new();
+        for &w in sorted {
+            if w.is_floating {
+                groups.push(vec![w]);
+                continue;
+            }
+            if let Some(last) = groups.last_mut() {
+                let l0 = last[0];
+                if !l0.is_floating
+                    && l0.output == w.output
+                    && l0.workspace_idx == w.workspace_idx
+                    && l0.column == w.column
+                {
+                    last.push(w);
+                    continue;
+                }
+            }
+            groups.push(vec![w]);
+        }
+        groups
+    }
 }
 
 #[cfg(test)]
@@ -100,6 +125,51 @@ mod tests {
         assert_eq!(sorted.len(), 2);
         assert_eq!(sorted[0].command[0], "a");
         assert_eq!(sorted[1].command[0], "b");
+    }
+
+    #[test]
+    fn column_groups_merge_same_column() {
+        let w1 = WindowEntry {
+            command: vec!["a".into()],
+            app_id: None,
+            title: None,
+            output: "O".into(),
+            workspace_idx: 1,
+            column: 1,
+            tile: 1,
+            is_floating: false,
+        };
+        let w2 = WindowEntry {
+            command: vec!["b".into()],
+            app_id: None,
+            title: None,
+            output: "O".into(),
+            workspace_idx: 1,
+            column: 1,
+            tile: 2,
+            is_floating: false,
+        };
+        let w3 = WindowEntry {
+            command: vec!["c".into()],
+            app_id: None,
+            title: None,
+            output: "O".into(),
+            workspace_idx: 1,
+            column: 2,
+            tile: 1,
+            is_floating: false,
+        };
+        let s = SessionFile {
+            windows: vec![w1, w2, w3],
+            ..sample_session()
+        };
+        let sorted = s.sorted_windows();
+        let g = SessionFile::column_groups(&sorted);
+        assert_eq!(g.len(), 2);
+        assert_eq!(g[0].len(), 2);
+        assert_eq!(g[0][0].tile, 1);
+        assert_eq!(g[0][1].tile, 2);
+        assert_eq!(g[1].len(), 1);
     }
 
     #[test]

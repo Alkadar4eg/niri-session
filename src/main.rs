@@ -19,7 +19,8 @@ use crate::debug_log::DebugLog;
 use crate::error::{Error, Result};
 use crate::launch_config::{
     graceful_shutdown_session_path, merged_default_session_dir, resolve_session_file_path,
-    LaunchConfig, DEFAULT_IPC_SETTLE_MS, DEFAULT_SESSION_BASENAME, DEFAULT_SPAWN_START_DELAY_MS,
+    LaunchConfig, DEFAULT_IPC_SETTLE_MS, DEFAULT_SESSION_BASENAME, DEFAULT_SPAWN_DEADLINE_MS,
+    DEFAULT_SPAWN_START_DELAY_MS,
 };
 use crate::restore::Timing;
 
@@ -81,6 +82,18 @@ struct Cli {
         env = "NIRI_SESSION_SPAWN_START_DELAY_MS"
     )]
     spawn_start_delay_ms: Option<u64>,
+
+    /// Do not wait for window mapping after spawn; next window starts immediately (racy for column stacks)
+    #[arg(long = "no-await", default_value_t = false, action = clap::ArgAction::SetTrue)]
+    no_await: bool,
+
+    /// Max ms to wait for a new window after spawn (when awaiting is enabled); config: [load].spawn_deadline
+    #[arg(
+        long = "spawn-deadline",
+        env = "NIRI_SESSION_SPAWN_DEADLINE_MS",
+        value_name = "MS"
+    )]
+    spawn_deadline_ms: Option<u64>,
 
     /// Disable desktop notification on launch failures (resolve/spawn/empty command)
     #[arg(long = "no-notify-on-spawn-failure", default_value_t = false, action = clap::ArgAction::SetTrue)]
@@ -209,8 +222,11 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
     ));
     let timings = merged_timing(cli, launch_cfg);
     d.log(format!(
-        "timings: ipc_settle_ms={} spawn_start_delay_ms={}",
-        timings.ipc_settle_ms, timings.spawn_start_delay_ms
+        "timings: ipc_settle_ms={} spawn_start_delay_ms={} await_spawn={} spawn_deadline_ms={}",
+        timings.ipc_settle_ms,
+        timings.spawn_start_delay_ms,
+        timings.await_spawn,
+        timings.spawn_deadline_ms
     ));
     let notify_on_failure =
         launch_config::merged_notify_on_failure(cli.no_notify_on_spawn_failure, launch_cfg);
@@ -228,6 +244,7 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
 
 fn merged_timing(cli: &Cli, cfg: &LaunchConfig) -> Timing {
     let l = &cfg.load;
+    let await_spawn = merged_await_spawn(cli, cfg);
     Timing::from_values(
         cli.ipc_settle_ms
             .or(l.ipc_settle_ms)
@@ -235,5 +252,16 @@ fn merged_timing(cli: &Cli, cfg: &LaunchConfig) -> Timing {
         cli.spawn_start_delay_ms
             .or(l.spawn_start_delay_ms)
             .unwrap_or(DEFAULT_SPAWN_START_DELAY_MS),
+        await_spawn,
+        cli.spawn_deadline_ms
+            .or(l.spawn_deadline)
+            .unwrap_or(DEFAULT_SPAWN_DEADLINE_MS),
     )
+}
+
+fn merged_await_spawn(cli: &Cli, cfg: &LaunchConfig) -> bool {
+    if cli.no_await {
+        return false;
+    }
+    !cfg.load.no_await.unwrap_or(false)
 }

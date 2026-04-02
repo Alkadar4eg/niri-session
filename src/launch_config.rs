@@ -13,6 +13,8 @@ use crate::session::WindowEntry;
 
 pub const DEFAULT_IPC_SETTLE_MS: u64 = 80;
 pub const DEFAULT_SPAWN_START_DELAY_MS: u64 = 0;
+/// Максимальное время ожидания появления нового окна в списке niri после `spawn` (режим с ожиданием).
+pub const DEFAULT_SPAWN_DEADLINE_MS: u64 = 10_000;
 
 /// Parsed `niri-session.conf`.
 #[derive(Debug, Clone, Default, Deserialize)]
@@ -131,6 +133,10 @@ pub fn resolve_session_file_path(user: &Path, cfg: &LaunchConfig) -> PathBuf {
 pub struct LoadSettings {
     pub ipc_settle_ms: Option<u64>,
     pub spawn_start_delay_ms: Option<u64>,
+    /// If `true`, do not wait for a new window id after each spawn (fire-and-forget).
+    pub no_await: Option<bool>,
+    /// Max time in ms to wait for a new window after spawn when awaiting is enabled.
+    pub spawn_deadline: Option<u64>,
     /// If `false`, do not call `notify-send` on launch failures (resolve/spawn/empty command).
     pub notify_on_spawn_failure: Option<bool>,
 }
