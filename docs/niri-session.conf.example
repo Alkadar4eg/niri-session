@@ -1,16 +1,30 @@
-# Copy to ~/.config/niri/niri-session.conf and adjust.
-# Used by: niri-session --load session.json
+# Copy to ~/.config/niri-session/niri-session.conf and adjust.
+# Used by: niri-session --load / --save
 # Docs: docs/CONFIG.md
 
+[session]
+# default_session_dir = "~/sessions/niri"
+# graceful_shutdown_name = "last"   # --graceful-shutdown / --load-last (можно last.json)
+
 [load]
-# spawn_timeout_ms = 5000
+# ipc_settle_ms = 100
+# spawn_start_delay_ms = 200
 # notify_on_spawn_failure = true
 
+# command — массив или одна строка с аргументами:
+# command = "google-chrome-stable --profile-directory=Default"
 [[launch]]
 app_id = "Google-chrome"
 title_contains = "VK Messenger"
+resolve = "xwayland-satellite"
 command = ["google-chrome-stable"]
 
 [[launch]]
 app_id = "Google-chrome"
+resolve = "xwayland-satellite"
 command = ["google-chrome-stable"]
+
+[[launch]]
+app_id = "cursor"
+resolve = "/usr/lib/electron39/electron"
+command = ""

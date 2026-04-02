@@ -14,16 +14,15 @@ echo "$NIRI_SOCKET"
 
 Сообщения вида «unexpected IPC response» или ошибки niri при `Action` часто связаны с **несовпадением версии** niri и крейта `niri-ipc`, с которым собран `niri-session`. Соберите проект с тем же `niri-ipc`, что соответствует вашему niri (`niri --version`), или установите niri из того же релиза, что и зависимость в `Cargo.toml`.
 
-## Таймаут при `--load`
+## `--graceful-shutdown` закрыл все окна
 
-По умолчанию окно ждётся **2 секунды** (`spawn_timeout_ms`). Сообщение о таймауте ожидания окна по PID:
+Команда **`niri-session --graceful-shutdown`** после сохранения JSON вызывает IPC **`CloseWindow`** для каждого окна: без подтверждения и без отличия «важных» приложений. Несохранённые данные в приложениях могут быть потеряны — используйте осознанно (например перед `niri msg action quit` или выходом из сессии).
 
-- Увеличьте `spawn_timeout_ms` в **`[load]`** в `~/.config/niri/niri-session.conf`, или `--spawn-timeout-ms`, или `NIRI_SESSION_SPAWN_TIMEOUT_MS`.
-- При необходимости увеличьте `--spawn-start-delay-ms` / `spawn_start_delay_ms` в конфиге.
-- Увеличивайте `--spawn-poll-ms` только если нагрузка на CPU не критична.
-- Для браузеров и Electron PID в IPC может **не совпасть** с PID `spawn` — известное ограничение MVP; попробуйте другой способ запуска или правку JSON/конфига.
+## Медленный или «рваный» `--load`
 
-Если включены уведомления (по умолчанию да), при таймауте также придёт **desktop notification** через `notify-send` (нужен `libnotify`).
+Загрузка **не ждёт** появления окон: процессы стартуют подряд с паузами из **`[load]`** / CLI. Если niri или диск не успевают, увеличьте `ipc_settle_ms` и при необходимости `spawn_start_delay_ms` (или `--ipc-settle-ms`, `--spawn-start-delay-ms`). См. [LOAD_RESTORE.md](LOAD_RESTORE.md).
+
+При ошибке **запуска** процесса (или отсутствии правила `[[launch]]`) в логе будет `окно пропущено`; при включённых уведомлениях — ещё `notify-send` (нужен `libnotify`).
 
 ## Пустой или битый JSON
 
@@ -42,6 +41,6 @@ echo "$NIRI_SOCKET"
 xwayland-satellite :1 -listenfd …
 ```
 
-Это **не** команда для повторного запуска приложения (дескрипторы сессионные). При **`--save`** такие строки остаются в JSON вместе с `app_id` и `title` — раскладка сохраняется. При **`--load`** для таких строк нужен **TOML-конфиг** `[[launch]]`: по `app_id` и при необходимости `title_contains` указывается реальная `command` (например `google-chrome-stable`). См. [CONFIG.md](CONFIG.md).
+Это **не** команда для повторного запуска приложения (дескрипторы сессионные). При **`--save`** такие строки остаются в JSON вместе с `app_id` и `title` — раскладка сохраняется. При **`--load`** для таких строк нужен **TOML-конфиг** `[[launch]]`: `app_id` / `title_contains`, поле **`resolve`** (`-listenfd` или basename вроде `xwayland-satellite`) и реальная `command`. См. [CONFIG.md](CONFIG.md).
 
-Если правила нет — ошибка с подсказкой посмотреть `app_id`/`title` в сообщении и добавить секцию в `~/.config/niri/niri-session.conf` или передать `--config /путь`.
+Если правила нет — ошибка с подсказкой посмотреть `app_id`/`title` в сообщении и добавить секцию в `~/.config/niri-session/niri-session.conf` или передать `--config /путь`.

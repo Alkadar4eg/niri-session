@@ -1,17 +1,8 @@
 //! Heuristics for `/proc/*/cmdline` values that must not be re-run on `--load`.
 
-use std::path::Path;
-
-fn basename_arg0(arg0: &str) -> &str {
-    Path::new(arg0)
-        .file_name()
-        .and_then(|s| s.to_str())
-        .unwrap_or(arg0)
-}
-
-/// If `Some`, the argv must not be spawned: it is tied to the current compositor session or is an
-/// internal bridge (e.g. [xwayland-satellite](https://github.com/niri-wm/niri)) rather than the
-/// user's application.
+/// If `Some`, the argv must not be spawned without a `[[launch]]` override: ephemeral session
+/// state (e.g. `-listenfd`). Program-specific bridges (e.g. `xwayland-satellite`) are configured
+/// via `[[launch]].resolve` in `niri-session.conf`.
 pub fn unrestorable_reason(cmd: &[String]) -> Option<&'static str> {
     if cmd.is_empty() {
         return None;
@@ -19,11 +10,6 @@ pub fn unrestorable_reason(cmd: &[String]) -> Option<&'static str> {
     if cmd.iter().any(|a| a == "-listenfd") {
         return Some(
             "argv contains -listenfd (ephemeral fds from the current session; not portable)",
-        );
-    }
-    if basename_arg0(&cmd[0]) == "xwayland-satellite" {
-        return Some(
-            "argv is xwayland-satellite (spawned by niri for X11 clients; replace with the real app, e.g. google-chrome or flatpak run …)",
         );
     }
     None
@@ -34,7 +20,7 @@ mod tests {
     use super::*;
 
     #[test]
-    fn xwayland_satellite_is_unrestorable() {
+    fn listenfd_with_xwayland_argv_is_unrestorable() {
         let cmd = vec![
             "xwayland-satellite".into(),
             ":1".into(),
@@ -42,6 +28,12 @@ mod tests {
             "145".into(),
         ];
         assert!(unrestorable_reason(&cmd).is_some());
+    }
+
+    #[test]
+    fn xwayland_basename_without_listenfd_is_restorable_by_policy() {
+        let cmd = vec!["xwayland-satellite".into(), ":1".into()];
+        assert!(unrestorable_reason(&cmd).is_none());
     }
 
     #[test]

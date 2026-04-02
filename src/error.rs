@@ -20,7 +20,7 @@ pub enum Error {
     #[error("JSON error: {0}")]
     Json(#[from] serde_json::Error),
 
-    #[error("save or load path must be specified; use --save or --load")]
+    #[error("specify a mode: --save [PATH], --load [PATH], --graceful-shutdown, or --load-last")]
     NoMode,
 
     #[error("cannot save and load at the same time")]
@@ -32,17 +32,8 @@ pub enum Error {
     #[error("no workspace for window id {0}")]
     MissingWorkspace(u64),
 
-    #[error("window position missing in layout (not tiled?)")]
-    MissingLayoutPosition,
-
     #[error("spawn failed: {0}")]
     Spawn(String),
-
-    #[error("timed out waiting for window (pid {pid})")]
-    WindowTimeout { pid: u32 },
-
-    #[error("failed to align window position after {0} attempts")]
-    LayoutAlignFailed(u32),
 
     #[error("empty command")]
     EmptyCommand,
@@ -57,13 +48,16 @@ pub enum Error {
     ConfigInvalid { path: PathBuf, msg: String },
 
     #[error(
-        "no [[launch]] rule matches this window; saved argv is not portable (e.g. xwayland-satellite). Add a rule in niri-session.conf — app_id={app_id:?} title={title:?} cmd={cmd:?}"
+        "no [[launch]] rule matches this window; saved argv is not portable (e.g. -listenfd). Add a rule with app_id/title_contains and resolve=… (basename) or resolve=\"-listenfd\" — app_id={app_id:?} title={title:?} cmd={cmd:?}"
     )]
     MissingLaunchOverride {
         cmd: Vec<String>,
         app_id: Option<String>,
         title: Option<String>,
     },
+
+    #[error("восстановление завершено с ошибками: {count} окон (детали выше)")]
+    RestorePartial { count: usize },
 }
 
 pub type Result<T> = std::result::Result<T, Error>;

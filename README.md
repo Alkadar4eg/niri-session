@@ -62,15 +62,33 @@ make test
 niri-session --save ~/session.json
 ```
 
-Восстановить (запуск процессов и раскладка через IPC):
+Каталог для файлов сессий по умолчанию — **`[session].default_session_dir`** в `~/.config/niri-session/niri-session.conf` или **`NIRI_SESSION_DIR`**; иначе `~/.config/niri-session/sessions`. Имя без пути (`foo.json`) сохраняется/загружается в этом каталоге; **`--save`** / **`--load`** без аргумента используют **`session.json`** там (см. [docs/CONFIG.md](docs/CONFIG.md)).
+
+Восстановить (последовательный фокус столов и **запуск процессов без ожидания окон** — см. [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md)):
 
 ```sh
 niri-session --load ~/session.json
 ```
 
-Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте соответствие `app_id` / заголовок → команда запуска в `~/.config/niri/niri-session.conf` или в файле, указанном через `--config`. В том же файле секция **`[load]`** задаёт тайминги восстановления и опцию уведомлений (`notify-send` при сбое spawn или таймауте окна; по умолчанию включено). Подробно: [docs/CONFIG.md](docs/CONFIG.md).
+**«Мягкое» завершение:** сохранить сессию в файл из **`[session].graceful_shutdown_name`** (по умолчанию имя **`last`** в каталоге сессий) и закрыть все окна:
 
-Параметры задержек при загрузке (мс) и переменные окружения описаны в [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md).
+```sh
+niri-session --graceful-shutdown
+```
+
+Позже восстановить именно этот снимок:
+
+```sh
+niri-session --load-last
+```
+
+Поле **`graceful_shutdown_name`**, разрешение пути и несовместимость с **`--save`/`--load`** — в [docs/CONFIG.md](docs/CONFIG.md).
+
+Для окон с непереносимой `command` в JSON (например X11 через `xwayland-satellite`) задайте в `[[launch]]` поле **`resolve`** (basename проблемной программы или `-listenfd`), `app_id` / заголовок и реальную `command` в `~/.config/niri-session/niri-session.conf` или через `--config`. Секция **`[load]`** задаёт паузы между шагами и уведомления (`notify-send` при ошибке запуска; по умолчанию включено). Подробно: [docs/CONFIG.md](docs/CONFIG.md).
+
+Параметры задержек при загрузке (мс) и переменные окружения описаны в [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md). Для отладки: **`-d` / `--debug`** — подробный журнал в stderr (IPC, окна, команды, паузы).
+
+Подсказка по хоткеям niri (оверлей `show-hotkey-overlay`): если в `~/.config/niri/config.kdl` ещё нет этой привязки, см. [docs/NIRI_HOTKEY_OVERLAY.md](docs/NIRI_HOTKEY_OVERLAY.md). Строку для вставки в `binds { }` можно вывести командой `niri-session --print-niri-hotkey-overlay-bind`.
 
 ## Документация
 
@@ -80,7 +98,8 @@ niri-session --load ~/session.json
 | [docs/LOAD_RESTORE.md](docs/LOAD_RESTORE.md) | Поведение `--load`, тайминги, ограничения |
 | [docs/TROUBLESHOOTING.md](docs/TROUBLESHOOTING.md) | Типичные ошибки |
 | [docs/BUILD.md](docs/BUILD.md) | Сборка, Makefile, версии niri |
-| [docs/CONFIG.md](docs/CONFIG.md) | TOML `[[launch]]`, путь по умолчанию, `--config` |
+| [docs/CONFIG.md](docs/CONFIG.md) | TOML `[[launch]]`, `[session]`, `--graceful-shutdown` / `--load-last`, `--config` |
+| [docs/NIRI_HOTKEY_OVERLAY.md](docs/NIRI_HOTKEY_OVERLAY.md) | Хоткей оверлея niri, фрагмент KDL, `niri msg action` |
 
 ## Ограничения (MVP)
 
