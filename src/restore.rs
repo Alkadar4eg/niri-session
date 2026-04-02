@@ -55,6 +55,7 @@ pub fn restore(
     launch_cfg: &LaunchConfig,
     notify_on_spawn_failure: bool,
     open_forcefully: bool,
+    resume_focused: bool,
     debug: DebugLog,
 ) -> Result<()> {
     let sorted = session.sorted_windows();
@@ -91,6 +92,14 @@ pub fn restore(
             eprintln!("niri-session-manage: окно пропущено: {e}");
             failed += 1;
         }
+    }
+    if resume_focused {
+        if let Err(e) = restore_saved_focus(socket, session, timings, debug) {
+            debug.log(format!("restore_saved_focus: {e}"));
+            eprintln!("niri-session-manage: не удалось вернуть фокус: {e}");
+        }
+    } else {
+        debug.log("restore_saved_focus: skipped (resume_focused=false)");
     }
     debug.log(format!("restore: done, failed={failed}"));
     if failed == 0 {
@@ -132,6 +141,53 @@ fn identity_matches_tiled(saved: &WindowEntry, live: &Window) -> bool {
         (None, None) => saved.title == live.title,
         _ => false,
     }
+}
+
+fn find_live_window_for_saved<'a>(
+    saved: &WindowEntry,
+    workspaces: &'a [Workspace],
+    windows: &'a [Window],
+) -> Option<&'a Window> {
+    let ws_id = resolve_workspace_id(workspaces, &saved.output, saved.workspace_idx)?;
+    windows
+        .iter()
+        .find(|live| live_window_matches_saved_slot(saved, live, ws_id))
+}
+
+/// После восстановления окон — сфокусировать то, что было в фокусе при сохранении.
+fn restore_saved_focus(
+    socket: &mut Socket,
+    session: &SessionFile,
+    timings: &Timing,
+    debug: DebugLog,
+) -> Result<()> {
+    let Some(saved) = session.windows.iter().find(|w| w.was_focused) else {
+        debug.log("restore_saved_focus: no was_focused entry in session");
+        return Ok(());
+    };
+    let workspaces = ipc::workspaces(socket, debug)?;
+    let windows = ipc::windows(socket, debug)?;
+    let Some(live) = find_live_window_for_saved(saved, &workspaces, &windows) else {
+        debug.log(
+            "restore_saved_focus: no matching live window (closed, moved, or title/app_id drift)",
+        );
+        return Ok(());
+    };
+    debug.log(format!(
+        "restore_saved_focus: FocusWindow id={} (saved app_id={:?} title={:?})",
+        live.id, saved.app_id, saved.title
+    ));
+    ipc::action(
+        socket,
+        Action::FocusWindow { id: live.id },
+        debug,
+    )?;
+    sleep_ms(
+        timings.ipc_settle_ms,
+        debug,
+        "after FocusWindow (restore_saved_focus)",
+    );
+    Ok(())
 }
 
 fn live_window_matches_saved_slot(saved: &WindowEntry, live: &Window, ws_id: u64) -> bool {
@@ -558,6 +614,7 @@ mod matching_tests {
             column,
             tile,
             is_floating: floating,
+            was_focused: false,
         }
     }
 

@@ -141,6 +141,9 @@ pub struct LoadSettings {
     pub notify_on_spawn_failure: Option<bool>,
     /// If `true`, always spawn even when a matching window already exists (`--open-forcefully`).
     pub open_forcefully: Option<bool>,
+    /// If `true` (default), after `--load` focus the window that was focused when the session was saved.
+    /// If `false`, leave focus where niri ends up after the last restore step.
+    pub resume_focused: Option<bool>,
 }
 
 #[derive(Debug, Clone, Deserialize)]
@@ -495,6 +498,7 @@ mod tests {
             column: 1,
             tile: 1,
             is_floating: false,
+            was_focused: false,
         }
     }
 
@@ -510,6 +514,7 @@ mod tests {
             column: 1,
             tile: 1,
             is_floating: false,
+            was_focused: false,
         };
         let argv = resolve_spawn_command(&w, &cfg).expect("resolve");
         assert_eq!(argv[0], "/opt/google/chrome/chrome");

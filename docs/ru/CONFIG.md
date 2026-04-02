@@ -59,6 +59,7 @@ graceful_shutdown_name = "last.json"
 | `spawn_deadline` | integer | `10000` | Лимит миллисекунд ожидания нового окна в niri после spawn (см. `--spawn-deadline` в [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `notify_on_spawn_failure` | boolean | `true` | Вызывать `notify-send` при ошибке подготовки команды или `spawn`. Отключить: `false` здесь или `--no-notify-on-spawn-failure` в CLI. |
 | `open_forcefully` | boolean | `false` | Если `true`, при `--load` всегда выполнять `spawn`, даже если подходящее окно уже есть (как флаг `--open-forcefully`). |
+| `resume_focused` | boolean | `true` | Если `true`, после `--load` вернуть фокус на окно, которое было в фокусе при сохранении. Если `false` — оставить фокус там, где окажется после последнего шага восстановления. |
 
 Пример в начале файла:
 

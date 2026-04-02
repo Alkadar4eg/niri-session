@@ -59,6 +59,7 @@ All fields are optional. Priority: **CLI arguments** or **environment variables*
 | `spawn_deadline` | integer | `10000` | Max milliseconds to wait for a new window in niri after spawn (see `--spawn-deadline` in [LOAD_RESTORE.md](LOAD_RESTORE.md)). |
 | `notify_on_spawn_failure` | boolean | `true` | Call `notify-send` on command preparation or `spawn` failure. Disable with `false` here or `--no-notify-on-spawn-failure` in CLI. |
 | `open_forcefully` | boolean | `false` | If `true`, always spawn on `--load` even when a matching window already exists (same as `--open-forcefully`). |
+| `resume_focused` | boolean | `true` | If `true`, after `--load` focus the window that was focused when the session was saved. If `false`, leave focus wherever the last restore step left it. |
 
 Example at the top of the file:
 

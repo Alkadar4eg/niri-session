@@ -223,6 +223,8 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
     d.log(format!("notify_on_launch_failure={notify_on_failure}"));
     let open_forcefully = merged_open_forcefully(cli, launch_cfg);
     d.log(format!("open_forcefully={open_forcefully}"));
+    let resume_focused = merged_resume_focused(launch_cfg);
+    d.log(format!("resume_focused={resume_focused}"));
     let mut socket = ipc::connect(d)?;
     restore::restore(
         &mut socket,
@@ -231,12 +233,17 @@ fn cmd_load_resolved(path: &Path, cli: &Cli, launch_cfg: &LaunchConfig, d: Debug
         launch_cfg,
         notify_on_failure,
         open_forcefully,
+        resume_focused,
         d,
     )
 }
 
 fn merged_open_forcefully(cli: &Cli, cfg: &LaunchConfig) -> bool {
     cli.open_forcefully || cfg.load.open_forcefully.unwrap_or(false)
+}
+
+fn merged_resume_focused(cfg: &LaunchConfig) -> bool {
+    cfg.load.resume_focused.unwrap_or(true)
 }
 
 fn merged_timing(cli: &Cli, cfg: &LaunchConfig) -> Timing {

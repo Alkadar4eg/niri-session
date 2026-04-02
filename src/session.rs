@@ -37,6 +37,9 @@ pub struct WindowEntry {
     /// 1-based tile index within the column.
     pub tile: usize,
     pub is_floating: bool,
+    /// Окно было в фокусе при сохранении сессии (для `--load`).
+    #[serde(default)]
+    pub was_focused: bool,
 }
 
 impl WindowEntry {
@@ -103,6 +106,7 @@ mod tests {
                     column: 2,
                     tile: 1,
                     is_floating: false,
+                    was_focused: false,
                 },
                 WindowEntry {
                     command: vec!["a".into()],
@@ -113,6 +117,7 @@ mod tests {
                     column: 1,
                     tile: 1,
                     is_floating: false,
+                    was_focused: false,
                 },
             ],
         }
@@ -138,6 +143,7 @@ mod tests {
             column: 1,
             tile: 1,
             is_floating: false,
+            was_focused: false,
         };
         let w2 = WindowEntry {
             command: vec!["b".into()],
@@ -148,6 +154,7 @@ mod tests {
             column: 1,
             tile: 2,
             is_floating: false,
+            was_focused: false,
         };
         let w3 = WindowEntry {
             command: vec!["c".into()],
@@ -158,6 +165,7 @@ mod tests {
             column: 2,
             tile: 1,
             is_floating: false,
+            was_focused: false,
         };
         let s = SessionFile {
             windows: vec![w1, w2, w3],

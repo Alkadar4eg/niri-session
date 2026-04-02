@@ -84,6 +84,7 @@ pub fn capture(socket: &mut Socket, debug: DebugLog) -> Result<SessionFile> {
             column,
             tile,
             is_floating: w.is_floating,
+            was_focused: w.is_focused,
         });
     }
 
